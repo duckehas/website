@@ -1,0 +1,49 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Processing Payment - Duckey Software</title>
+  <script src="stripe-redirect.js"></script>
+  <style>
+    body {
+      font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+      background-color: #1a1a1a;
+      color: #ffffff;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      height: 100vh;
+      margin: 0;
+    }
+    .processing-container {
+      text-align: center;
+      padding: 2rem;
+      border-radius: 10px;
+      background-color: #272727;
+      box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
+      max-width: 90%;
+      width: 500px;
+    }
+    .spinner {
+      width: 50px;
+      height: 50px;
+      border: 5px solid rgba(255, 255, 255, 0.3);
+      border-radius: 50%;
+      border-top-color: #00b3ff;
+      animation: spin 1s ease-in-out infinite;
+      margin: 0 auto 20px;
+    }
+    @keyframes spin {
+      to { transform: rotate(360deg); }
+    }
+  </style>
+</head>
+<body>
+  <div class="processing-container">
+    <div class="spinner"></div>
+    <h1>Processing Your Payment</h1>
+    <p>Please wait while we redirect you based on your payment status...</p>
+  </div>
+</body>
+</html> 

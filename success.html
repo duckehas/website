@@ -1,0 +1,237 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Payment Successful - Engine 6.0</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        :root {
+            --primary: #ff0033;
+            --accent: #ff0033;
+            --background: #0f0f12;
+            --card-bg: #1a1a1f;
+            --border: #2a2a30;
+            --text: #ffffff;
+        }
+        
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: 'Poppins', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, 'Open Sans', 'Helvetica Neue', sans-serif;
+        }
+        
+        body {
+            background-color: var(--background);
+            color: var(--text);
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: 100vh;
+            margin: 0;
+            position: relative;
+            overflow: hidden;
+        }
+        
+        .gradient-background {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: radial-gradient(circle at 50% 5%, rgba(255, 0, 51, 0.15), transparent 40%),
+                        radial-gradient(circle at 85% 45%, rgba(255, 0, 51, 0.05), transparent 35%),
+                        radial-gradient(circle at 15% 70%, rgba(255, 0, 51, 0.05), transparent 35%);
+            z-index: -2;
+        }
+        
+        .noise-overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background-image: url('data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAADIAAAAyCAYAAAAeP4ixAAAACXBIWXMAAAsTAAALEwEAmpwYAAAE8ElEQVR4nO1ZW29URxCe1V6wudiYmwFjQBAwCXeDcMiFhyoPUfIWfkJ+JT8h/ARekVClD1Sh5I1KVJFIREEIKeE4EJNwsR0bG9/Y3uXbaqXZMz2zu2fP2bMbwJGOdvecM/3NdHd1zXwzGylQoECB/xMiJaMTgF9LZv2AqfsDNM3GPjJ7t2TWCLHu1lF1JKaJUAZHBKwNzQS+gw5zXklsRJL3TiJ5pWTWNWImQM1UwErJaAJwR0wRMPbO2HslOUPAsZLYHCTB3Eki5xVMGUzOAr6Sc9rr8P0J4FfQaZoCMqWQCYUlDdA0MtgdxHYS8L4Dkm9DIOcXG9MMXy1CdV3F9aBktmhkLyjwC5QIvCBDnQz8C/C4SL+L4fshoqpA1VsA34eS2BABrwQQYwVSl3dUL5l9BOCmAZclswmAJyWxr+TbsJrGvq//Uj1hk8t/Pwt9BaBpFLQS1DRL3DWAxx0QaytHwH15twvKTwEOJJVp9Tyz0A0CvoakjwE+BfCpCLpvAsfNhM7VD8CzcjRrWEfARxrMTCPbNTIq09gNWtQVOlcl7l7XeCFJnEDLEMBDFXLVAVlvJLtUdjfggkW1dA+UHm6AvrNQeAjgPsAzB2jGMvbNLbcUVA1wWD/zLurRDdpMeKJk8JXTNG47UYtQlYB1AaMx6NVFBUHVAPsB7BPLNx2oOOl5X8+9JM/TkmQ7iC0q2QnrKM+aRdB3kNmQC0TukY8YpwZEySFAR32pRQ+URMC4XhvzAqL5RU84wNuaFQxbQAzQTvqeBBjXZz0OIDW2SxN8qObqALIXTxRtzLGVJgUZfqXRf0YB1lEzxAGa1ucze+Fk9q5CZ1oUZM0WdlWKIQdozMO+CvdFpfPcCgJG/C5FU5AhgGdLYoMW0HB7BQGPJa3oX0mKEuuXKNnrAdG93EEKss+8XWl12m8DLWpHxVpjx5eNemTgVUcBP2lQHNLVucF7Cjpl/A+L2ql75K11MgxL5tmv0dsm4KE82/JN4TYRuIAjVnDcKtl87QMdVZ13nMV/q0U+c/RHrJMgDZHEwUWA/RKJh+1opWWakoGvmUHV2IbuhG6tB+9Ia4Lnc4DxVbBGZrY9LO7bSWxLFJ1T8/TMUo2NmhOeOifnTZc0MJL3Ie1kjP9o9Cxp9ntqE18OJqD9zhLwVf0e0YT/iYIZNzIINvtdxWpkprxeAc3Hdr/XFECfA9LIKs9NcLbGPXa/n9Xsm+bZlg60kXSvYnAkZE/L22r3+8AkdYDOuHu5JNFKB10G/KrX+f6a3e+S1P+iKf4Za+O9D/hS8qkV73r2lf4zp5aKBbR0XxRo/Tq2a/ULeFpL9yRK8FnJ6KiAObULOCJpPQ5UBp+1DmJbxJ+81N7B2XrOKXntrZ8JeGb2TW+Mf9RQMK2IXr+lP/OyZjtBDTilncKYtqYTVlxoW6DXLzIBWXsE3Ewb12YzxTbpHsC2fVS3btyVZDKgn2J6oNcC5FXVpLLMSmxRl7CeDXNkP2sLh2VVFQBp1rKXAUy6y2Rr6aDagMfdFPZtUmvamWYM0f/NrNdnGu+SvhVxMzEzRWQ3Pzuopm23KlBHl7iRxZ4AFVMD3W0+JuVxqQ4vRIECBQr8L/EXfFNEK+qeOukAAAAASUVORK5CYII=');
+            opacity: 0.05;
+            z-index: -1;
+        }
+        
+        .success-container {
+            text-align: center;
+            padding: 3rem;
+            border-radius: 10px;
+            background-color: var(--card-bg);
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.2);
+            max-width: 90%;
+            width: 500px;
+            border: 1px solid var(--border);
+            position: relative;
+            z-index: 1;
+            overflow: hidden;
+        }
+        
+        .success-container::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 3px;
+            background: linear-gradient(to right, var(--primary), transparent);
+            z-index: 2;
+        }
+        
+        .success-icon {
+            width: 80px;
+            height: 80px;
+            background-color: rgba(255, 0, 51, 0.1);
+            color: var(--accent);
+            font-size: 40px;
+            margin: 0 auto 20px;
+            border-radius: 50%;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            position: relative;
+            box-shadow: 0 0 20px rgba(255, 0, 51, 0.3);
+        }
+        
+        .success-icon::after {
+            content: '';
+            position: absolute;
+            width: 90px;
+            height: 90px;
+            border: 1px solid rgba(255, 0, 51, 0.3);
+            border-radius: 50%;
+            animation: pulse 2s infinite;
+        }
+        
+        @keyframes pulse {
+            0% {
+                transform: scale(1);
+                opacity: 1;
+            }
+            100% {
+                transform: scale(1.5);
+                opacity: 0;
+            }
+        }
+        
+        h1 {
+            font-size: 2.2rem;
+            margin-bottom: 20px;
+            background: linear-gradient(to right, #ffffff, #b3b3b3);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            display: inline-block;
+        }
+        
+        p {
+            font-size: 1.1rem;
+            line-height: 1.6;
+            color: rgba(255, 255, 255, 0.7);
+            margin-bottom: 15px;
+        }
+        
+        .btn {
+            display: inline-block;
+            background-color: var(--primary);
+            color: white;
+            border: none;
+            padding: 12px 28px;
+            margin-top: 20px;
+            border-radius: 6px;
+            cursor: pointer;
+            text-decoration: none;
+            font-weight: 600;
+            transition: all 0.3s ease;
+            position: relative;
+            overflow: hidden;
+        }
+        
+        .btn::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 0;
+            height: 100%;
+            background-color: rgba(255, 255, 255, 0.1);
+            transition: width 0.3s ease;
+            z-index: 0;
+        }
+        
+        .btn:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 7px 20px rgba(255, 0, 51, 0.3);
+        }
+        
+        .btn:hover::before {
+            width: 100%;
+        }
+        
+        .particles {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            pointer-events: none;
+            z-index: -1;
+        }
+        
+        .particle {
+            position: absolute;
+            background-color: var(--accent);
+            border-radius: 50%;
+            animation: float 20s infinite ease-in-out;
+        }
+    </style>
+</head>
+<body>
+    <div class="gradient-background"></div>
+    <div class="noise-overlay"></div>
+    <div class="particles" id="particles"></div>
+    
+    <div class="success-container">
+        <div class="success-icon">✓</div>
+        <h1>Payment Successful!</h1>
+        <p>Thank you for your purchase. Your transaction was completed successfully.</p>
+        <p>We've sent a confirmation email with your purchase details and download instructions.</p>
+        <a href="/" class="btn">Return to Home</a>
+    </div>
+
+    <script>
+        // Create background particles
+        function createParticles() {
+            const container = document.getElementById('particles');
+            const count = window.innerWidth < 768 ? 10 : 20;
+            
+            for (let i = 0; i < count; i++) {
+                const particle = document.createElement('div');
+                const size = Math.random() * 3 + 1;
+                const posX = Math.random() * 100;
+                const posY = Math.random() * 100;
+                const duration = Math.random() * 20 + 10;
+                const delay = Math.random() * 5;
+                const opacity = Math.random() * 0.5 + 0.1;
+                
+                particle.classList.add('particle');
+                particle.style.width = `${size}px`;
+                particle.style.height = `${size}px`;
+                particle.style.top = `${posY}%`;
+                particle.style.left = `${posX}%`;
+                particle.style.opacity = opacity;
+                particle.style.boxShadow = `0 0 ${size * 3}px rgba(255, 0, 51, ${opacity})`;
+                particle.style.animationDuration = `${duration}s`;
+                particle.style.animationDelay = `-${delay}s`;
+                
+                container.appendChild(particle);
+            }
+        }
+        
+        document.addEventListener('DOMContentLoaded', createParticles);
+    </script>
+</body>
+</html> 

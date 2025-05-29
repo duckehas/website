@@ -1,0 +1,12 @@
+{
+  "name": "engine-6-website",
+  "version": "1.0.0",
+  "description": "Engine 6.0 Roblox Executor Website",
+  "main": "server.js",
+  "scripts": {
+    "start": "node server.js"
+  },
+  "dependencies": {
+    "express": "^4.17.1"
+  }
+} 
