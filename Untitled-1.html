@@ -1,0 +1,533 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>User Profile UI</title>
+  <style>
+    @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;700&display=swap');
+
+    * {
+      box-sizing: border-box;
+    }
+
+    body {
+      margin: 0;
+      font-family: 'Inter', sans-serif;
+      height: 100vh;
+      overflow: hidden;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      background: black;
+      position: relative;
+    }
+
+    video.bg-video {
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
+      z-index: -1;
+    }
+
+    .flower {
+      position: absolute;
+      width: 20px;
+      height: 20px;
+      background-image: url('https://upload.wikimedia.org/wikipedia/commons/4/47/White_flower_icon.png');
+      background-size: cover;
+      animation: fall linear infinite;
+    }
+
+    @keyframes fall {
+      0% {
+        transform: translateY(-50px) rotate(0deg);
+        opacity: 1;
+      }
+      100% {
+        transform: translateY(100vh) rotate(360deg);
+        opacity: 0;
+      }
+    }
+
+    .container {
+      background: linear-gradient(135deg, #ffdee9, #b5fffc);
+      border-radius: 20px;
+      width: 450px;
+      padding: 25px;
+      box-shadow: 0 0 25px rgba(255, 192, 203, 0.5);
+      backdrop-filter: blur(10px);
+      position: relative;
+      z-index: 2;
+      color: #333;
+      display: flex;
+      flex-direction: column;
+    }
+
+    .divider {
+      border-top: 2px solid #b86fb8;
+      margin-bottom: 10px;
+    }
+
+    .title {
+      text-align: center;
+      font-weight: 700;
+      font-size: 20px;
+      margin-bottom: 15px;
+      color: #b86fb8;
+    }
+
+    .telegram {
+      text-align: center;
+      margin-bottom: 15px;
+      font-weight: 600;
+      font-size: 18px;
+      color: #a43f7f;
+    }
+
+    .profile-section {
+      display: flex;
+      align-items: center;
+      gap: 15px;
+      background: rgba(255, 182, 193, 0.3);
+      padding: 10px;
+      border-radius: 10px;
+      margin-bottom: 20px;
+      color: #333;
+    }
+
+    .avatar {
+      background: white;
+      width: 48px;
+      height: 48px;
+      border-radius: 5px;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      font-weight: bold;
+      font-size: 12px;
+      color: black;
+    }
+
+    .socials {
+      display: flex;
+      justify-content: center;
+      gap: 10px;
+      margin-bottom: 15px;
+    }
+
+    .button {
+      flex: 1;
+      background: #f8c1d1;
+      border: 2px solid #a43f7f;
+      padding: 12px;
+      border-radius: 10px;
+      text-align: center;
+      font-weight: bold;
+      display: flex;
+      flex-direction: column;
+      justify-content: center;
+      align-items: center;
+      gap: 5px;
+      color: #5a2352;
+      transition: background 0.3s ease;
+    }
+
+    .button:hover {
+      background: #e49ac7;
+      cursor: pointer;
+    }
+
+    .banner {
+      background: linear-gradient(to right, #ffafbd, #ffc3a0);
+      height: 10px;
+      border-radius: 5px;
+      margin-bottom: 15px;
+    }
+
+    .music-player {
+      background: rgba(255, 192, 203, 0.3);
+      border-radius: 15px;
+      padding: 15px;
+      color: #333;
+      margin-bottom: 20px;
+    }
+
+    .song-name {
+      text-align: center;
+      font-weight: bold;
+      margin-bottom: 10px;
+      color: #b86fb8;
+    }
+
+    .controls {
+      display: flex;
+      justify-content: center;
+      gap: 20px;
+      font-size: 20px;
+      margin-bottom: 10px;
+      cursor: pointer;
+      color: #a43f7f;
+    }
+
+    .range-bar {
+      width: 100%;
+      cursor: pointer;
+    }
+
+    .progress-time {
+      display: flex;
+      justify-content: space-between;
+      font-size: 12px;
+      margin-bottom: 10px;
+      color: #5a2352;
+    }
+
+    .volume {
+      display: flex;
+      align-items: center;
+      gap: 5px;
+      color: #a43f7f;
+    }
+
+    .playlist {
+      margin-top: 15px;
+      padding: 10px;
+      background: rgba(255, 182, 193, 0.3);
+      border-radius: 10px;
+    }
+
+    .playlist-item {
+      padding: 5px 0;
+      border-bottom: 1px solid rgba(255,182,193,0.5);
+      cursor: pointer;
+    }
+
+    .playlist-item:last-child {
+      border-bottom: none;
+    }
+
+    .playlist-item a {
+      color: #5a2352;
+      text-decoration: none;
+      font-weight: 600;
+    }
+
+    .playlist-item a:hover {
+      text-decoration: underline;
+    }
+
+    /* Chat panel styles */
+    .chat-panel {
+      background: rgba(255, 182, 193, 0.3);
+      border-radius: 15px;
+      padding: 15px;
+      margin-top: 0;
+      color: #5a2352;
+      display: flex;
+      flex-direction: column;
+      gap: 10px;
+      max-height: 250px;
+      overflow: hidden;
+    }
+
+    .chat-title {
+      font-weight: 700;
+      font-size: 16px;
+      text-align: center;
+      color: #b86fb8;
+    }
+
+    .chat-messages {
+      flex: 1;
+      overflow-y: auto;
+      background: #ffe4e9;
+      border-radius: 10px;
+      padding: 10px;
+      font-size: 14px;
+      color: #5a2352;
+      display: flex;
+      flex-direction: column;
+      gap: 8px;
+      scroll-behavior: smooth;
+    }
+
+    .chat-messages .user-msg {
+      align-self: flex-end;
+      background: #f8c1d1;
+      padding: 8px 12px;
+      border-radius: 15px 15px 0 15px;
+      max-width: 80%;
+      word-wrap: break-word;
+    }
+
+    .chat-messages .bot-msg {
+      align-self: flex-start;
+      background: #b86fb8;
+      color: white;
+      padding: 8px 12px;
+      border-radius: 15px 15px 15px 0;
+      max-width: 80%;
+      word-wrap: break-word;
+    }
+
+    #chat-input {
+      padding: 8px 12px;
+      border-radius: 10px;
+      border: 2px solid #a43f7f;
+      font-size: 14px;
+      color: #5a2352;
+      outline: none;
+      width: 100%;
+      box-sizing: border-box;
+    }
+
+    #send-btn {
+      background: #f8c1d1;
+      border: 2px solid #a43f7f;
+      border-radius: 10px;
+      padding: 8px 0;
+      font-weight: bold;
+      color: #5a2352;
+      cursor: pointer;
+      transition: background 0.3s ease;
+      margin-top: 5px;
+      width: 100%;
+    }
+
+    #send-btn:hover {
+      background: #e49ac7;
+    }
+  </style>
+</head>
+<body>
+  <video class="bg-video" autoplay muted loop>
+    <source src="https://motionbgs.com/media/4651/cats-in-love.960x540.mp4" type="video/mp4">
+    Your browser does not support the video tag.
+  </video>
+
+  <div class="container">
+    <div class="divider"></div>
+    <div class="title">made by your Man</div>
+    <div class="telegram">John &amp; Cheyenne</div>
+
+    <div class="profile-section">
+      <div class="avatar">
+        <img src="https://cdn.discordapp.com/attachments/1351038643640467489/1377590037591363655/5ABBA47C-DD65-44CF-86BD-A4A7A3B2C86C.jpg?ex=68398433&is=683832b3&hm=26192a8002349e685f243a161686a0faf1dc9db9065b5bb24ca42d73a8229cab&" alt="Avatar" style="width: 100%; height: 100%; border-radius: 5px; object-fit: cover;" />
+      </div>
+      <div>Status: THE BEST COUPLE IN THE WORLD</div>
+    </div>
+
+    <div class="socials">
+      <div class="button">
+        <div>Time Together</div>
+        <div id="time-together" style="font-size: 14px; font-weight: normal;">Loading...</div>
+      </div>
+    </div>
+
+    <div class="banner"></div>
+
+    <div class="music-player">
+      <div class="song-name">Some cool beats made by your Man</div>
+      <div class="controls">
+        <span id="prev-btn" title="Previous">&#171;</span>
+        <span id="play-pause-btn" title="Play/Pause">►</span>
+        <span id="next-btn" title="Next">&#187;</span>
+      </div>
+      <input type="range" class="range-bar" id="progress-bar" value="0" max="100" />
+      <div class="progress-time">
+        <span id="current-time">0:00</span>
+        <span id="duration">0:00</span>
+      </div>
+      <div class="volume">
+        <span>&#128266;</span>
+        <input type="range" class="range-bar" id="volume-bar" value="50" max="100" />
+      </div>
+      <div class="playlist">
+        <div class="playlist-item"><a href="https://music.apple.com/us/playlist/live-laugh-love/pl.u-jV89bNJFDYbWoX2" target="_blank">💖 my pretty girls play List</a></div>
+      </div>
+      <audio id="audio-player" src=""></audio>
+    </div>
+
+    <!-- Chat panel -->
+    <div class="chat-panel">
+      <div class="chat-title">Chat with John</div>
+      <div class="chat-messages" id="chat-messages"></div>
+      <input type="text" id="chat-input" placeholder="Say something..." autocomplete="off" />
+      <button id="send-btn">Send</button>
+    </div>
+  </div>
+
+  <!-- Falling flowers -->
+  <script>
+    const createFlower = () => {
+      const flower = document.createElement('div');
+      flower.classList.add('flower');
+      flower.style.left = Math.random() * 100 + 'vw';
+      flower.style.animationDuration = 4 + Math.random() * 3 + 's';
+      document.body.appendChild(flower);
+
+      setTimeout(() => flower.remove(), 7000);
+    };
+
+    setInterval(createFlower, 300);
+
+    // Time Together Counter
+    const startDate = new Date(2023, 8, 15, 3, 0, 0);
+
+    function updateTimeTogether() {
+      const now = new Date();
+      let diff = now - startDate;
+
+      const days = Math.floor(diff / (1000 * 60 * 60 * 24));
+      diff -= days * (1000 * 60 * 60 * 24);
+      const hours = Math.floor(diff / (1000 * 60 * 60));
+      diff -= hours * (1000 * 60 * 60);
+      const minutes = Math.floor(diff / (1000 * 60));
+      diff -= minutes * (1000 * 60);
+      const seconds = Math.floor(diff / 1000);
+
+      document.getElementById('time-together').textContent = 
+        `${days}d ${hours}h ${minutes}m ${seconds}s`;
+    }
+
+    setInterval(updateTimeTogether, 1000);
+    updateTimeTogether();
+
+    // Music Player Logic
+    const audioPlayer = document.getElementById('audio-player');
+    const playPauseBtn = document.getElementById('play-pause-btn');
+    const prevBtn = document.getElementById('prev-btn');
+    const nextBtn = document.getElementById('next-btn');
+    const progressBar = document.getElementById('progress-bar');
+    const currentTimeEl = document.getElementById('current-time');
+    const durationEl = document.getElementById('duration');
+    const volumeBar = document.getElementById('volume-bar');
+
+    const playlist = [
+      {
+        name: 'Cool Beat 1',
+        src: 'https://www.soundhelix.com/examples/mp3/SoundHelix-Song-5.mp3',
+      },
+      {
+        name: 'Cool Beat 2',
+        src: 'https://www.soundhelix.com/examples/mp3/SoundHelix-Song-15.mp3',
+      },
+    ];
+
+    let currentSongIndex = 0;
+
+    function loadSong(index) {
+      audioPlayer.src = playlist[index].src;
+      audioPlayer.load();
+      durationEl.textContent = '0:00';
+      currentTimeEl.textContent = '0:00';
+      progressBar.value = 0;
+    }
+
+    function playSong() {
+      audioPlayer.play();
+      playPauseBtn.textContent = '❚❚';
+    }
+
+    function pauseSong() {
+      audioPlayer.pause();
+      playPauseBtn.textContent = '►';
+    }
+
+    playPauseBtn.addEventListener('click', () => {
+      if (audioPlayer.paused) {
+        playSong();
+      } else {
+        pauseSong();
+      }
+    });
+
+    prevBtn.addEventListener('click', () => {
+      currentSongIndex--;
+      if (currentSongIndex < 0) currentSongIndex = playlist.length - 1;
+      loadSong(currentSongIndex);
+      playSong();
+    });
+
+    nextBtn.addEventListener('click', () => {
+      currentSongIndex++;
+      if (currentSongIndex >= playlist.length) currentSongIndex = 0;
+      loadSong(currentSongIndex);
+      playSong();
+    });
+
+    audioPlayer.addEventListener('timeupdate', () => {
+      if (!audioPlayer.duration) return;
+      const progressPercent = (audioPlayer.currentTime / audioPlayer.duration) * 100;
+      progressBar.value = progressPercent;
+
+      // Update time display
+      const currentMinutes = Math.floor(audioPlayer.currentTime / 60);
+      const currentSeconds = Math.floor(audioPlayer.currentTime % 60).toString().padStart(2, '0');
+      const durationMinutes = Math.floor(audioPlayer.duration / 60);
+      const durationSeconds = Math.floor(audioPlayer.duration % 60).toString().padStart(2, '0');
+
+      currentTimeEl.textContent = `${currentMinutes}:${currentSeconds}`;
+      durationEl.textContent = `${durationMinutes}:${durationSeconds}`;
+    });
+
+    progressBar.addEventListener('input', () => {
+      if (!audioPlayer.duration) return;
+      const seekTime = (progressBar.value / 100) * audioPlayer.duration;
+      audioPlayer.currentTime = seekTime;
+    });
+
+    volumeBar.addEventListener('input', () => {
+      audioPlayer.volume = volumeBar.value / 100;
+    });
+
+    loadSong(currentSongIndex);
+
+    // Chat functionality
+    const chatMessages = document.getElementById('chat-messages');
+    const chatInput = document.getElementById('chat-input');
+    const sendBtn = document.getElementById('send-btn');
+
+    function addMessage(text, sender) {
+      const msgDiv = document.createElement('div');
+      msgDiv.textContent = text;
+      msgDiv.className = sender === 'user' ? 'user-msg' : 'bot-msg';
+      chatMessages.appendChild(msgDiv);
+      chatMessages.scrollTop = chatMessages.scrollHeight;
+    }
+
+    function botReply() {
+      // Basic bot reply: echo with a delay
+      setTimeout(() => {
+        addMessage("I love you, my dear ❤️", 'bot');
+      }, 800);
+    }
+
+    sendBtn.addEventListener('click', () => {
+      const message = chatInput.value.trim();
+      if (!message) return;
+      addMessage(message, 'user');
+      chatInput.value = '';
+
+      if (message.toLowerCase() === '/mission impossible') {
+        setTimeout(() => {
+          addMessage("i meet cheyenne my 9th grade year of high school i was freinds wiht this kid named aden and he said she had a fat yk what lol but besides that i started asking her for gum in english class and if we went to the libray i would try to talk to her as much as i could but i thought that i would have no chance becuase she had just gotten broken up with so i dint think i had a chance but besides that i started asking her for gum i asked her if she wanted to use one of my airpods to lsiten to music toghter in class and the teacher hated me so we never go to sit toghter wicth sucked but there was homecoming comming up and we were talking on the phone one night and she said i have no one to go to homecoming wiht and i said i will go wiht you and she said you will i sadi yepp she sadi okay and before homecoming there is a football game so we went to that game and at that game we were holding hands and walking aounr dbut still werent dating untill i think her mom said something about it and we walked away and i said well do you want to date she said sure if you want to i said i do so yah in that moment i thought to my slef i was like yes yes lol but there was like this thing where she got to wal acorss the field wih her dad so i got to meet her parents and here mom and whatnot but after that i went to the next football game wiht her and i had waited the hole day to kiss her cuz i was joking about it in school and she sadi tn at the game she was so scared we were standing on the bleachers she game me a kiss fiannly after like 5 mins no im just playing lol that was the best thing that ever happend to me but besides that after that we hng out whnever we can only on weak end mostly my house some time her house and then we both evtually went to online school becuase school was just boring and yah thats pretty much it i love you  💖✨", 'bot');
+        }, 800);
+      } else {
+        botReply();
+      }
+    });
+
+    // Optional: enable sending message by Enter key
+    chatInput.addEventListener('keydown', (e) => {
+      if (e.key === 'Enter') {
+        sendBtn.click();
+      }
+    });
+  </script>
+</body>
+</html>
