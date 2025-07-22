@@ -1,0 +1,226 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Daily Rewards - Engine Bucks</title>
+  <style>
+    body {
+      font-family: 'Poppins', sans-serif;
+      background: #121212;
+      color: white;
+      text-align: center;
+      padding: 50px;
+      margin: 0;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      height: 100vh;
+      justify-content: center;
+    }
+    .balance {
+      font-size: 1.3rem;
+      background: #7b61ff;
+      padding: 10px 20px;
+      border-radius: 10px;
+      position: fixed;
+      top: 20px;
+      right: 20px;
+    }
+    .profile {
+      position: fixed;
+      top: 20px;
+      left: 20px;
+      background: #1e1e2f;
+      padding: 15px;
+      border-radius: 10px;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      width: 120px;
+    }
+    .profile-pic {
+      width: 50px;
+      height: 50px;
+      background-size: cover;
+      background-position: center;
+      border-radius: 50%;
+      margin-bottom: 8px;
+    }
+    .change-pfp-btn {
+      font-size: 0.7rem;
+      background: transparent;
+      color: #eee;
+      border: none;
+      cursor: pointer;
+      text-decoration: underline;
+      margin-bottom: 6px;
+    }
+    .level {
+      font-size: 0.9rem;
+      margin-bottom: 4px;
+    }
+    .xp-bar-container {
+      width: 100%;
+      height: 6px;
+      background: #444;
+      border-radius: 4px;
+    }
+    .xp-bar {
+      height: 100%;
+      background: #7b61ff;
+      border-radius: 4px;
+      transition: width 0.3s ease;
+      width: 0%;
+    }
+    .reward-btn {
+      background: #a78bfa;
+      border: none;
+      color: white;
+      font-size: 1.3rem;
+      padding: 15px 30px;
+      border-radius: 10px;
+      cursor: pointer;
+      transition: background-color 0.3s ease;
+      user-select: none;
+    }
+    .reward-btn:disabled {
+      background: #555;
+      cursor: not-allowed;
+    }
+    .countdown {
+      margin-top: 25px;
+      font-size: 1.1rem;
+      color: #ccc;
+    }
+  </style>
+</head>
+<body>
+
+  <div class="profile">
+    <div class="profile-pic" id="pfp" style="background-image: url('https://via.placeholder.com/50')"></div>
+    <button class="change-pfp-btn" onclick="changePFP()">Change</button>
+    <div class="level" id="level">Level 1</div>
+    <div class="xp-bar-container">
+      <div class="xp-bar" id="xp-bar"></div>
+    </div>
+  </div>
+
+  <div class="balance" id="balance-display">Balance: 0 EB</div>
+  <button class="reward-btn" id="claim-btn">Claim Daily Reward +100 EB</button>
+  <div class="countdown" id="countdown-timer"></div>
+
+  <script>
+    const STORAGE_KEY_BALANCE = 'engineBucksBalance';
+    const STORAGE_KEY_LAST_CLAIM = 'engineBucksLastClaim';
+    const LEVEL_KEY = 'engineBucksLevel';
+    const XP_KEY = 'engineBucksXP';
+    const PFP_KEY = 'engineBucksPFP';
+
+    const balanceDisplay = document.getElementById('balance-display');
+    const claimBtn = document.getElementById('claim-btn');
+    const countdownTimer = document.getElementById('countdown-timer');
+    const pfp = document.getElementById('pfp');
+    const levelEl = document.getElementById('level');
+    const xpBar = document.getElementById('xp-bar');
+
+    const DAILY_REWARD_AMOUNT = 100;
+    const DAILY_XP_GAIN = 25;
+    const COOLDOWN_MS = 24 * 60 * 60 * 1000; // 24 hours
+
+    let balance = 0;
+    let lastClaim = 0;
+    let level = 1;
+    let xp = 0;
+
+    function loadData() {
+      balance = parseInt(localStorage.getItem(STORAGE_KEY_BALANCE)) || 0;
+      lastClaim = parseInt(localStorage.getItem(STORAGE_KEY_LAST_CLAIM)) || 0;
+      level = parseInt(localStorage.getItem(LEVEL_KEY)) || 1;
+      xp = parseInt(localStorage.getItem(XP_KEY)) || 0;
+      const savedPFP = localStorage.getItem(PFP_KEY);
+      if (savedPFP) {
+        pfp.style.backgroundImage = `url('${savedPFP}')`;
+      }
+    }
+
+    function saveData() {
+      localStorage.setItem(STORAGE_KEY_BALANCE, balance);
+      localStorage.setItem(STORAGE_KEY_LAST_CLAIM, lastClaim);
+      localStorage.setItem(LEVEL_KEY, level);
+      localStorage.setItem(XP_KEY, xp);
+    }
+
+    function updateBalanceDisplay() {
+      balanceDisplay.textContent = `Balance: ${balance} EB`;
+    }
+
+    function updateProfileDisplay() {
+      levelEl.textContent = `Level ${level}`;
+      const xpPercent = Math.min(100, (xp / (level * 100)) * 100);
+      xpBar.style.width = `${xpPercent}%`;
+    }
+
+    function canClaim() {
+      const now = Date.now();
+      return now - lastClaim >= COOLDOWN_MS;
+    }
+
+    function updateUI() {
+      if (canClaim()) {
+        claimBtn.disabled = false;
+        countdownTimer.textContent = 'You can claim your reward now!';
+      } else {
+        claimBtn.disabled = true;
+        startCountdown();
+      }
+      updateBalanceDisplay();
+      updateProfileDisplay();
+    }
+
+    function startCountdown() {
+      function updateCountdown() {
+        const now = Date.now();
+        const timeLeft = COOLDOWN_MS - (now - lastClaim);
+        if (timeLeft <= 0) {
+          claimBtn.disabled = false;
+          countdownTimer.textContent = 'You can claim your reward now!';
+          clearInterval(interval);
+          return;
+        }
+        const hours = Math.floor(timeLeft / (1000 * 60 * 60));
+        const minutes = Math.floor((timeLeft % (1000 * 60 * 60)) / (1000 * 60));
+        const seconds = Math.floor((timeLeft % (1000 * 60)) / 1000);
+        countdownTimer.textContent = `Next claim in ${hours}h ${minutes}m ${seconds}s`;
+      }
+      updateCountdown();
+      const interval = setInterval(updateCountdown, 1000);
+    }
+
+    function changePFP() {
+      const url = prompt("Enter image URL for your profile picture:");
+      if (url && url.trim()) {
+        localStorage.setItem(PFP_KEY, url.trim());
+        pfp.style.backgroundImage = `url('${url.trim()}')`;
+      }
+    }
+
+    claimBtn.addEventListener('click', () => {
+      if (!canClaim()) return;
+      balance += DAILY_REWARD_AMOUNT;
+      xp += DAILY_XP_GAIN;
+      if (xp >= level * 100) {
+        xp -= level * 100;
+        level++;
+      }
+      lastClaim = Date.now();
+      saveData();
+      updateUI();
+      alert(`You claimed ${DAILY_REWARD_AMOUNT} EB!`);
+    });
+
+    loadData();
+    updateUI();
+  </script>
+</body>
+</html>

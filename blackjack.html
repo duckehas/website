@@ -1,0 +1,329 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Blackjack - Engine Bucks</title>
+  <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;600&display=swap" rel="stylesheet" />
+  <style>
+    body {
+      font-family: 'Poppins', sans-serif;
+      background: #121212;
+      color: #fff;
+      padding: 40px;
+      text-align: center;
+    }
+    .balance {
+      position: fixed;
+      top: 20px;
+      right: 20px;
+      background: #7b61ff;
+      padding: 15px 25px;
+      border-radius: 10px;
+      font-weight: 700;
+      font-size: 1.3rem;
+      color: white;
+    }
+    h1 {
+      color: #a78bfa;
+      margin-bottom: 20px;
+    }
+    .cards {
+      display: flex;
+      justify-content: center;
+      gap: 10px;
+      margin-bottom: 10px;
+    }
+    .card {
+      background: #1e1e2f;
+      padding: 20px;
+      border-radius: 10px;
+      font-size: 2rem;
+      min-width: 50px;
+    }
+    button {
+      background: #7b61ff;
+      color: white;
+      padding: 12px 20px;
+      margin: 5px;
+      border: none;
+      border-radius: 8px;
+      font-size: 1rem;
+      cursor: pointer;
+    }
+    button:hover:not(:disabled) {
+      background: #9f85ff;
+    }
+    button:disabled {
+      background: #4a39a9;
+      cursor: not-allowed;
+    }
+    #message {
+      margin-top: 20px;
+      font-weight: bold;
+      min-height: 24px;
+    }
+    .bet-control {
+      margin-bottom: 20px;
+      font-weight: 600;
+      font-size: 1.2rem;
+      color: #a78bfa;
+    }
+    .hand-value {
+      margin-bottom: 15px;
+      font-weight: 600;
+      font-size: 1.1rem;
+      color: #ccc;
+    }
+  </style>
+</head>
+<body>
+  <div class="balance" id="eb-balance">Balance: 5000 EB</div>
+  <h1>Blackjack</h1>
+
+  <div class="bet-control">
+    Bet: <span id="bet-amount">100</span> EB
+    <button onclick="changeBet(-50)" id="bet-down">-50</button>
+    <button onclick="changeBet(50)" id="bet-up">+50</button>
+  </div>
+
+  <div><strong>Your Hand</strong></div>
+  <div class="cards" id="player-cards"></div>
+  <div class="hand-value">Total: <span id="player-total">0</span></div>
+
+  <div><strong>Dealer's Hand</strong></div>
+  <div class="cards" id="dealer-cards"></div>
+  <div class="hand-value">Total: <span id="dealer-total">0</span></div>
+
+  <button onclick="hit()" id="hit-btn">Hit</button>
+  <button onclick="stand()" id="stand-btn">Stand</button>
+  <button onclick="startGame()" id="new-game-btn">New Game</button>
+
+  <div id="message"></div>
+
+  <script>
+    const STORAGE_KEY = 'engineBucksBalance';
+    let balance = 5000;
+    let bet = 100;
+    let deck, playerHand, dealerHand;
+    let gameInProgress = false;
+    let timerId;
+    let timeLeft = 30;
+
+    function updateBalanceDisplay() {
+      document.getElementById('eb-balance').textContent = `Balance: ${balance} EB`;
+    }
+
+    function saveBalance() {
+      localStorage.setItem(STORAGE_KEY, balance);
+    }
+
+    function loadBalance() {
+      const saved = localStorage.getItem(STORAGE_KEY);
+      if (saved) {
+        balance = parseInt(saved);
+      }
+      updateBalanceDisplay();
+    }
+
+    function changeBet(amount) {
+      if (gameInProgress) return; // Prevent changing bet mid-game
+      const newBet = bet + amount;
+      if (newBet >= 50 && newBet <= balance) {
+        bet = newBet;
+        document.getElementById('bet-amount').textContent = bet;
+      }
+    }
+
+    function startTimer() {
+      clearInterval(timerId);
+      timeLeft = 30;
+      updateMessage(`Time left: ${timeLeft}s to Hit or Stand`);
+      timerId = setInterval(() => {
+        timeLeft--;
+        if (timeLeft <= 0) {
+          clearInterval(timerId);
+          updateMessage('Time out! Auto-standing.');
+          stand();
+        } else {
+          updateMessage(`Time left: ${timeLeft}s to Hit or Stand`);
+        }
+      }, 1000);
+    }
+
+    function stopTimer() {
+      clearInterval(timerId);
+    }
+
+    function updateMessage(text) {
+      document.getElementById('message').textContent = text;
+    }
+
+    function startGame() {
+      if (balance < bet) {
+        updateMessage('Not enough EB to play.');
+        return;
+      }
+      balance -= bet;
+      updateBalanceDisplay();
+
+      deck = buildDeck();
+      playerHand = [drawCard(), drawCard()];
+      dealerHand = [drawCard(), drawCard()];
+      gameInProgress = true;
+
+      updateHands();
+      enableButtons(true);
+      updateMessage('');
+      startTimer();
+
+      // Check if player has blackjack immediately
+      if (getHandValue(playerHand) === 21) {
+        stopTimer();
+        endGame(true);
+      }
+    }
+
+    function buildDeck() {
+      const suits = ['♠', '♣', '♥', '♦'];
+      const values = ['2','3','4','5','6','7','8','9','10','J','Q','K','A'];
+      const newDeck = [];
+      for (const suit of suits) {
+        for (const value of values) {
+          newDeck.push({value, suit});
+        }
+      }
+      return newDeck.sort(() => Math.random() - 0.5);
+    }
+
+    function drawCard() {
+      return deck.pop();
+    }
+
+    function getHandValue(hand) {
+      let value = 0, aces = 0;
+      for (const card of hand) {
+        if (['J','Q','K'].includes(card.value)) {
+          value += 10;
+        } else if (card.value === 'A') {
+          value += 11;
+          aces++;
+        } else {
+          value += parseInt(card.value);
+        }
+      }
+      while (value > 21 && aces > 0) {
+        value -= 10;
+        aces--;
+      }
+      return value;
+    }
+
+    function updateHands(revealDealer = false) {
+      const playerDiv = document.getElementById('player-cards');
+      const dealerDiv = document.getElementById('dealer-cards');
+
+      playerDiv.innerHTML = playerHand.map(c => `<div class="card">${c.value}${c.suit}</div>`).join('');
+      document.getElementById('player-total').textContent = getHandValue(playerHand);
+
+      if (!revealDealer && gameInProgress) {
+        dealerDiv.innerHTML = `
+          <div class="card">??</div>
+          <div class="card">${dealerHand[1].value}${dealerHand[1].suit}</div>
+        `;
+        document.getElementById('dealer-total').textContent = '??';
+      } else {
+        dealerDiv.innerHTML = dealerHand.map(c => `<div class="card">${c.value}${c.suit}</div>`).join('');
+        document.getElementById('dealer-total').textContent = getHandValue(dealerHand);
+      }
+    }
+
+    function hit() {
+      if (!gameInProgress) return;
+      playerHand.push(drawCard());
+      updateHands();
+
+      const playerTotal = getHandValue(playerHand);
+      if (playerTotal > 21) {
+        stopTimer();
+        endGame(false, 'You bust! Dealer wins.');
+      } else if (playerTotal === 21) {
+        stopTimer();
+        endGame(true);
+      }
+    }
+
+    function stand() {
+      if (!gameInProgress) return;
+      stopTimer();
+
+      while (getHandValue(dealerHand) < 17) {
+        dealerHand.push(drawCard());
+      }
+
+      endGame();
+    }
+
+    function endGame(playerWin = false, bustMsg = '') {
+      const playerTotal = getHandValue(playerHand);
+      const dealerTotal = getHandValue(dealerHand);
+      const playerBlackjack = playerHand.length === 2 && playerTotal === 21;
+      const dealerBlackjack = dealerHand.length === 2 && dealerTotal === 21;
+
+      gameInProgress = false;
+      enableButtons(false);
+
+      let msg = '';
+
+      if (playerWin) {
+        if (playerBlackjack && !dealerBlackjack) {
+          const win = Math.floor(bet * 2.5);
+          balance += win;
+          msg = `Blackjack! You win +${win} EB 🎉`;
+        } else {
+          const win = bet * 2;
+          balance += win;
+          msg = `You hit 21! You win +${win} EB 🎉`;
+        }
+      } else if (bustMsg) {
+        msg = bustMsg;
+      } else {
+        if (dealerTotal > 21 || playerTotal > dealerTotal) {
+          const win = bet * 2;
+          balance += win;
+          msg = `You win! +${win} EB`;
+        } else if (dealerTotal === playerTotal) {
+          if (playerTotal === 21) {
+            const win = bet * 2;
+            balance += win;
+            msg = `You win with 21! +${win} EB 🥳`;
+          } else {
+            balance += bet;
+            msg = 'Push. Bet returned.';
+          }
+        } else {
+          msg = 'Dealer wins!';
+        }
+      }
+
+      updateMessage(msg);
+      updateHands(true);
+      updateBalanceDisplay();
+      saveBalance();
+    }
+
+    function enableButtons(enabled) {
+      document.getElementById('hit-btn').disabled = !enabled;
+      document.getElementById('stand-btn').disabled = !enabled;
+      document.getElementById('bet-up').disabled = enabled;
+      document.getElementById('bet-down').disabled = enabled;
+    }
+
+    window.onload = () => {
+      loadBalance();
+      document.getElementById('bet-amount').textContent = bet;
+      enableButtons(false);
+    };
+  </script>
+</body>
+</html>

@@ -1,0 +1,413 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Slots - Engine Bucks</title>
+  <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;600;800&display=swap" rel="stylesheet" />
+  <style>
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+    }
+    body {
+      font-family: 'Poppins', sans-serif;
+      background-color: #0e0e15;
+      color: #fff;
+      text-align: center;
+      padding: 40px;
+      position: relative;
+      min-height: 100vh;
+    }
+    h1 {
+      color: #a78bfa;
+      margin-bottom: 20px;
+    }
+    .slot-machine {
+      display: flex;
+      justify-content: center;
+      gap: 30px;
+      margin-bottom: 30px;
+    }
+    .slot {
+      width: 140px;
+      height: 160px;
+      border: 5px solid #7b61ff;
+      border-radius: 20px;
+      background: #1e1e2f;
+      box-shadow: 0 0 25px rgba(123, 97, 255, 0.6);
+      overflow: hidden;
+      font-size: 8rem;
+      line-height: 160px;
+      position: relative;
+      user-select: none;
+    }
+    button {
+      background: #7b61ff;
+      color: white;
+      border: none;
+      padding: 15px 40px;
+      font-size: 1.2rem;
+      border-radius: 10px;
+      cursor: pointer;
+      transition: background 0.3s;
+      margin-bottom: 20px;
+    }
+    button:hover {
+      background: #9f85ff;
+    }
+    #result {
+      font-size: 1.3rem;
+      margin-top: 10px;
+      min-height: 40px;
+      color: #aaffaa;
+    }
+    .paytable {
+      margin-top: 40px;
+      background: #1e1e2f;
+      padding: 20px;
+      border-radius: 10px;
+      max-width: 600px;
+      margin-left: auto;
+      margin-right: auto;
+      color: #cfcfff;
+      text-align: left;
+    }
+    .paytable h2 {
+      color: #a78bfa;
+      margin-bottom: 10px;
+    }
+    /* Notification popup */
+    #notification {
+      position: fixed;
+      top: 20px;
+      right: 20px;
+      background: #7b61ff;
+      color: white;
+      padding: 15px 25px;
+      border-radius: 10px;
+      font-weight: 700;
+      box-shadow: 0 0 15px rgba(123, 97, 255, 0.8);
+      opacity: 0;
+      pointer-events: none;
+      transition: opacity 0.5s ease;
+      z-index: 9999;
+    }
+    #notification.show {
+      opacity: 1;
+      pointer-events: auto;
+    }
+    /* Engine Bucks Panel */
+    #eb-balance-panel {
+      position: fixed;
+      top: 20px;
+      right: 20px;
+      background: linear-gradient(135deg, #7b61ff, #a78bfa);
+      padding: 15px 25px;
+      border-radius: 15px;
+      box-shadow: 0 0 20px rgba(123, 97, 255, 0.9);
+      font-weight: 700;
+      font-size: 1.3rem;
+      color: white;
+      user-select: none;
+      z-index: 10000;
+      min-width: 180px;
+      text-align: center;
+    }
+    /* Bet controls */
+    #bet-controls {
+      margin-bottom: 25px;
+    }
+    #bet-amount {
+      width: 120px;
+      font-size: 1.1rem;
+      padding: 8px;
+      border-radius: 6px;
+      border: 1px solid #7b61ff;
+      background: #1e1e2f;
+      color: white;
+      text-align: center;
+      margin-right: 10px;
+      user-select: text;
+    }
+    #max-bet-btn {
+      background: #ff4d4d;
+      padding: 10px 20px;
+      border-radius: 6px;
+      font-weight: 700;
+      transition: background 0.3s;
+    }
+    #max-bet-btn:hover {
+      background: #ff6666;
+    }
+    #reset-balance-btn {
+      background: #555;
+      margin-left: 10px;
+      padding: 10px 20px;
+      border-radius: 6px;
+      font-weight: 700;
+      transition: background 0.3s;
+    }
+    #reset-balance-btn:hover {
+      background: #777;
+    }
+  </style>
+</head>
+<body>
+
+   
+
+  
+  <h1>Slots - Engine Bucks</h1>
+
+  <div id="bet-controls">
+    <input type="number" id="bet-amount" min="100" step="100" value="100" />
+    <button id="max-bet-btn" title="Bet your entire balance">Max Bet</button>
+    <button id="reset-balance-btn" title="Reset Balance to 5000 EB">Reset Balance</button>
+  </div>
+
+  <div class="slot-machine">
+    <div class="slot" id="slot0">🍒</div>
+    <div class="slot" id="slot1">🍋</div>
+    <div class="slot" id="slot2">💎</div>
+  </div>
+
+  <button onclick="spinSlots()">Spin</button>
+  <div id="result"></div>
+
+  <div class="paytable">
+    <h2>Paytable (Based on Bet)</h2>
+    <p>🍒🍒🍒 = +5x Bet</p>
+    <p>🍋🍋🍋 = +3x Bet</p>
+    <p>🍇🍇🍇 = +2x Bet</p>
+    <p>💎💎💎 = +10x Bet</p>
+    <p>💰💰💰 = JACKPOT! +10,000x Bet (40% chance)</p>
+    <p>💲💲💲 = MINOR JACKPOT! +200x Bet (20% chance)</p>
+    <p>Any two matching = +1.5x Bet</p>
+    <p>Spin cost = Bet Amount</p>
+  </div>
+
+  <div id="notification"></div>
+  <div id="eb-balance-panel">Balance: 5000 EB</div>
+
+  <script>
+    const symbols = ['🍒', '🍋', '🍇', '💎', '💰', '💲'];
+    const slotsElements = [
+      document.getElementById('slot0'),
+      document.getElementById('slot1'),
+      document.getElementById('slot2'),
+    ];
+    const balancePanel = document.getElementById('eb-balance-panel');
+    const betInput = document.getElementById('bet-amount');
+    const maxBetBtn = document.getElementById('max-bet-btn');
+    const resetBalanceBtn = document.getElementById('reset-balance-btn');
+    const notification = document.getElementById('notification');
+    const STORAGE_KEY = 'engineBucksBalance';
+    let balance = 5000;
+    let bet = 100;
+    const symbolHeight = 160;
+
+    // Load saved balance
+    function loadBalance() {
+      const saved = localStorage.getItem(STORAGE_KEY);
+      if (saved !== null) {
+        const parsed = parseInt(saved, 10);
+        if (!isNaN(parsed)) balance = parsed;
+      }
+      updateBalanceDisplay();
+    }
+
+    // Save balance
+    function saveBalance() {
+      localStorage.setItem(STORAGE_KEY, balance);
+    }
+
+    // Show notification popup
+    function showNotification(message) {
+      notification.textContent = message;
+      notification.classList.add('show');
+      setTimeout(() => {
+        notification.classList.remove('show');
+      }, 4000);
+    }
+
+    // Animate slot reel scroll
+    function animateSlot(index, finalSymbol, duration = 2000) {
+      return new Promise(resolve => {
+        const slot = slotsElements[index];
+        const repeatedSymbols = symbols.concat(symbols);
+
+        slot.style.transition = 'none';
+        slot.style.transform = 'translateY(0)';
+        slot.style.fontSize = '5rem';
+        slot.style.lineHeight = '60px';
+
+        let scrollDiv = slot.querySelector('.scrollDiv');
+        if (!scrollDiv) {
+          scrollDiv = document.createElement('div');
+          scrollDiv.className = 'scrollDiv';
+          slot.innerHTML = '';
+          slot.appendChild(scrollDiv);
+        }
+        scrollDiv.style.willChange = 'transform';
+        scrollDiv.style.display = 'block';
+        scrollDiv.style.textAlign = 'center';
+
+        scrollDiv.innerHTML = repeatedSymbols.map(s => `<div style="height:${symbolHeight}px;">${s}</div>`).join('');
+
+        const finalIndex = symbols.indexOf(finalSymbol);
+        const scrollDistance = symbolHeight * (symbols.length + finalIndex);
+
+        let start = null;
+        function step(timestamp) {
+          if (!start) start = timestamp;
+          let elapsed = timestamp - start;
+          if (elapsed > duration) elapsed = duration;
+
+          // Ease out scrolling
+          const progress = elapsed / duration;
+          const easeProgress = 1 - Math.pow(1 - progress, 3);
+
+          scrollDiv.style.transform = `translateY(${-scrollDistance * easeProgress}px)`;
+
+          if (elapsed < duration) {
+            requestAnimationFrame(step);
+          } else {
+            // Final display
+            slot.innerHTML = finalSymbol;
+            slot.style.fontSize = '8rem';
+            slot.style.lineHeight = `${symbolHeight}px`;
+            resolve();
+          }
+        }
+        requestAnimationFrame(step);
+      });
+    }
+
+    // Update balance display
+    function updateBalanceDisplay() {
+      balancePanel.textContent = `Balance: ${balance} EB`;
+    }
+
+    // Spin logic and reward calculation
+    async function spinSlots() {
+      bet = parseInt(betInput.value, 10);
+      if (isNaN(bet) || bet < 100) {
+        showNotification('Minimum bet is 100 EB');
+        return;
+      }
+      if (bet > balance) {
+        showNotification('Insufficient balance for that bet');
+        return;
+      }
+
+      balance -= bet;
+      updateBalanceDisplay();
+      saveBalance();
+
+      // Randomly select symbols for each slot
+      const spinResults = [];
+
+      // For jackpots 💰 and 💲, apply chances:
+      for (let i = 0; i < 3; i++) {
+        let symbol;
+        if (Math.random() < 0.05) {
+          // 5% chance special symbol
+          symbol = Math.random() < 0.5 ? '💰' : '💲';
+        } else {
+          // Normal symbols only
+          symbol = symbols[Math.floor(Math.random() * 4)];
+        }
+        spinResults.push(symbol);
+      }
+
+      // Animate each slot
+      for (let i = 0; i < 3; i++) {
+        await animateSlot(i, spinResults[i]);
+      }
+
+      // Calculate payout
+      const counts = {};
+      spinResults.forEach(s => counts[s] = (counts[s] || 0) + 1);
+
+      let payout = 0;
+      const resultText = document.getElementById('result');
+
+      // Jackpot conditions first
+      if (spinResults.every(s => s === '💰')) {
+        // 40% chance to win jackpot
+        if (Math.random() < 0.4) {
+          payout = bet * 10000;
+          resultText.textContent = 'JACKPOT! 💰💰💰 You won ' + payout + ' EB!';
+          balance += payout;
+          updateBalanceDisplay();
+          saveBalance();
+          showNotification('🎉 JACKPOT! You won 10,000x your bet!');
+          return;
+        } else {
+          resultText.textContent = '💰💰💰 Jackpot missed! Try again!';
+          return;
+        }
+      } else if (spinResults.every(s => s === '💲')) {
+        // 20% chance minor jackpot
+        if (Math.random() < 0.2) {
+          payout = bet * 200;
+          resultText.textContent = 'MINOR JACKPOT! 💲💲💲 You won ' + payout + ' EB!';
+          balance += payout;
+          updateBalanceDisplay();
+          saveBalance();
+          showNotification('🎉 Minor Jackpot! You won 200x your bet!');
+          return;
+        } else {
+          resultText.textContent = '💲💲💲 Minor jackpot missed! Try again!';
+          return;
+        }
+      }
+
+      // Other payouts
+      if (counts['🍒'] === 3) {
+        payout = bet * 5;
+        resultText.textContent = `🍒🍒🍒 Three cherries! You won ${payout} EB!`;
+      } else if (counts['🍋'] === 3) {
+        payout = bet * 3;
+        resultText.textContent = `🍋🍋🍋 Three lemons! You won ${payout} EB!`;
+      } else if (counts['🍇'] === 3) {
+        payout = bet * 2;
+        resultText.textContent = `🍇🍇🍇 Three grapes! You won ${payout} EB!`;
+      } else if (counts['💎'] === 3) {
+        payout = bet * 10;
+        resultText.textContent = `💎💎💎 Three diamonds! You won ${payout} EB!`;
+      } else if (Object.values(counts).some(c => c === 2)) {
+        payout = bet * 1.5;
+        resultText.textContent = `Two matching symbols! You won ${payout} EB!`;
+      } else {
+        resultText.textContent = `No match, you lost your bet of ${bet} EB.`;
+      }
+
+      if (payout > 0) {
+        balance += payout;
+        updateBalanceDisplay();
+        saveBalance();
+        showNotification(`You won ${payout} EB!`);
+      }
+    }
+
+    // Max bet button functionality
+    maxBetBtn.addEventListener('click', () => {
+      betInput.value = balance;
+    });
+
+    // Reset balance button functionality
+    resetBalanceBtn.addEventListener('click', () => {
+      balance = 5000;
+      updateBalanceDisplay();
+      saveBalance();
+      document.getElementById('result').textContent = 'Balance has been reset to 5000 EB.';
+      showNotification('Balance reset to 5000 EB.');
+    });
+
+    loadBalance();
+  </script>
+</body>
+</html>

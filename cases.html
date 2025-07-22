@@ -1,0 +1,230 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Case Opening - Engine Bucks</title>
+  <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;600&display=swap" rel="stylesheet" />
+  <style>
+    body {
+      font-family: 'Poppins', sans-serif;
+      background: #121212;
+      color: white;
+      padding: 40px;
+      text-align: center;
+    }
+    h1 {
+      color: #a78bfa;
+      margin-bottom: 20px;
+    }
+    .balance {
+      position: fixed;
+      top: 20px;
+      right: 20px;
+      background: #7b61ff;
+      padding: 15px 25px;
+      border-radius: 10px;
+      font-weight: 700;
+      font-size: 1.3rem;
+      color: white;
+    }
+    .case-box {
+      background: #1e1e2f;
+      padding: 30px;
+      border-radius: 15px;
+      margin-top: 30px;
+      display: inline-block;
+      max-width: 700px;
+    }
+    button {
+      background: #7b61ff;
+      color: white;
+      padding: 12px 20px;
+      margin-top: 15px;
+      border: none;
+      border-radius: 8px;
+      font-size: 1rem;
+      cursor: pointer;
+      transition: background-color 0.3s ease;
+    }
+    button:hover {
+      background: #9f85ff;
+    }
+    #slots {
+      margin: 20px 0;
+      display: flex;
+      justify-content: center;
+      gap: 10px;
+      flex-wrap: wrap;
+    }
+    .slot {
+      background: #2a2a44;
+      border-radius: 10px;
+      padding: 15px 10px;
+      min-width: 90px;
+      font-weight: 600;
+      font-size: 1rem;
+      height: 60px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      user-select: none;
+      color: #ddd;
+      box-shadow: 0 0 6px #7b61ffaa;
+    }
+    #result {
+      margin-top: 20px;
+      font-size: 1.3rem;
+      font-weight: bold;
+      min-height: 1.5em;
+      color: #a0ffa0;
+    }
+  </style>
+</head>
+<body>
+  <div class="balance" id="eb-balance">Balance: 5000 EB</div>
+  <h1>Case Opening</h1>
+  <div class="case-box">
+    <p>Cost to open: <strong>1000 EB</strong></p>
+    <button id="open-btn" onclick="openCase()">Open Case</button>
+    <div id="slots">
+      <div class="slot">?</div>
+      <div class="slot">?</div>
+      <div class="slot">?</div>
+      <div class="slot">?</div>
+      <div class="slot">?</div>
+      <div class="slot">?</div>
+    </div>
+    <div id="result"></div>
+  </div>
+
+  <script>
+    const STORAGE_KEY = 'engineBucksBalance';
+    let balance = 5000;
+    const cost = 200;
+
+    const rewards = [
+      // Winning items with low weight (rarer)
+      { item: '🔥 Legendary Dragon Skin', value: 2500, weight: 1 },
+      { item: '✨ Epic Phoenix Skin', value: 1900, weight: 2 },
+      { item: '🎉 Rare Tiger Skin', value: 1400, weight: 2 },
+      { item: '🌟 Mythic Wolf Skin', value: 1800, weight: 1 },
+      { item: '⚡ Electric Cheetah Skin', value: 1300, weight: 2 },
+      { item: '🌈 Rainbow Unicorn Skin', value: 1200, weight: 2 },
+      { item: '🛡️ Guardian Shield Skin', value: 1150, weight: 3 },
+      { item: '🎭 Phantom Mask Skin', value: 1050, weight: 3 },
+      { item: '🔥 Inferno Blade Skin', value: 1250, weight: 2 },
+      { item: '🕶️ Shadow Assassin Skin', value: 950, weight: 3 },
+      { item: '🎉 Rare Phoenix Feather', value: 700, weight: 4 },
+      { item: '🎲 Lucky Dice Skin', value: 650, weight: 4 },
+      { item: '👍 Common Battle Helmet', value: 300, weight: 8 },
+      { item: '🔰 Rookie Armor Skin', value: 200, weight: 10 },
+      { item: '🧊 Frostbite Knife Skin', value: 500, weight: 6 },
+      { item: '🎯 Sniper Scope Skin', value: 450, weight: 7 },
+
+      // Losing items with high weight (more likely)
+      { item: '⚔️ Broken Sword Skin', value: 0, weight: 20 },
+      { item: '🕸️ Old Web Shield', value: 0, weight: 20 },
+      { item: '🦠 Virus Glitch Skin', value: 0, weight: 20 },
+      { item: '💀 Cursed Skull Skin', value: -100, weight: 15 },
+      { item: '🚫 Expired Voucher', value: -150, weight: 15 },
+      { item: '😢 Nothing', value: 0, weight: 25 },
+      { item: '☠️ Rusted Helmet', value: -50, weight: 18 },
+      { item: '🩸 Bloodstained Cloak', value: -75, weight: 18 },
+      { item: '🥀 Withered Rose', value: -80, weight: 18 },
+      { item: '🧟 Zombie Bite Mark', value: -90, weight: 18 },
+      { item: '🕷️ Spider Webbing', value: 0, weight: 22 },
+      { item: '💧 Empty Bottle', value: 0, weight: 22 },
+      { item: '⚙️ Broken Gear', value: -60, weight: 20 },
+    ];
+
+    const slots = [...document.querySelectorAll('.slot')];
+    const resultDiv = document.getElementById('result');
+    const openBtn = document.getElementById('open-btn');
+
+    function loadBalance() {
+      const saved = localStorage.getItem(STORAGE_KEY);
+      if (saved) balance = parseInt(saved);
+      updateBalance();
+    }
+
+    function saveBalance() {
+      localStorage.setItem(STORAGE_KEY, balance);
+    }
+
+    function updateBalance() {
+      document.getElementById('eb-balance').textContent = `Balance: ${balance} EB`;
+    }
+
+    // Weighted random pick of reward index
+    function randomRewardIndex() {
+      const totalWeight = rewards.reduce((sum, r) => sum + r.weight, 0);
+      let random = Math.random() * totalWeight;
+      for (let i = 0; i < rewards.length; i++) {
+        random -= rewards[i].weight;
+        if (random <= 0) return i;
+      }
+      return rewards.length - 1; // fallback
+    }
+
+    function spinSlot(slot, finalIndex, delay) {
+      return new Promise(resolve => {
+        let count = 0;
+        const maxCycles = 15 + delay;
+        const interval = setInterval(() => {
+          const idx = Math.floor(Math.random() * rewards.length);
+          slot.textContent = rewards[idx].item;
+          count++;
+          if (count > maxCycles) {
+            clearInterval(interval);
+            slot.textContent = rewards[finalIndex].item;
+            resolve(finalIndex);
+          }
+        }, 80);
+      });
+    }
+
+    async function openCase() {
+      if (balance < cost) {
+        resultDiv.textContent = 'Not enough EB to open case.';
+        return;
+      }
+      balance -= cost;
+      updateBalance();
+      saveBalance();
+
+      resultDiv.textContent = 'Spinning... Good luck!';
+      openBtn.disabled = true;
+
+      const finalIndices = [];
+      for (let i = 0; i < slots.length; i++) {
+        finalIndices.push(randomRewardIndex());
+      }
+
+      const spinPromises = slots.map((slot, i) => spinSlot(slot, finalIndices[i], i * 5));
+
+      await Promise.all(spinPromises);
+
+      let totalWon = 0;
+      for (const idx of finalIndices) {
+        totalWon += rewards[idx].value;
+      }
+      balance += totalWon;
+      updateBalance();
+      saveBalance();
+
+      if (totalWon > 0) {
+        resultDiv.textContent = `You got items worth ${totalWon} EB!`;
+      } else if (totalWon < 0) {
+        resultDiv.textContent = `Ouch! You lost ${-totalWon} EB with some cursed items...`;
+      } else {
+        resultDiv.textContent = `You got nothing this time. Try again!`;
+      }
+
+      openBtn.disabled = false;
+    }
+
+    window.onload = loadBalance;
+  </script>
+</body>
+</html>

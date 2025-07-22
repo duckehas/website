@@ -1,0 +1,422 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Engine Bucks Profile & Shop</title>
+  <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;600&display=swap" rel="stylesheet" />
+  <style>
+    body {
+      margin: 0;
+      font-family: 'Poppins', sans-serif;
+      background: none;
+      color: white;
+      min-height: 100vh;
+      background-color: #121212;
+      transition: background 0.5s ease;
+      padding-right: 320px; /* space for sidebar */
+    }
+
+    /* Profile Widget */
+    #profile-widget {
+      position: fixed;
+      top: 20px;
+      right: 20px;
+      background: #1e1e2f;
+      border-radius: 15px;
+      padding: 15px 20px;
+      width: 280px;
+      color: white;
+      box-shadow: 0 0 15px #7b61ffbb;
+      z-index: 100000;
+      user-select: none;
+    }
+    #profile-widget input[type="text"] {
+      width: 100%;
+      font-weight: 600;
+      font-size: 1.1rem;
+      background: transparent;
+      border: none;
+      border-bottom: 1.5px solid #7b61ff;
+      color: white;
+      outline: none;
+      user-select: text;
+    }
+    #profile-widget button, #profile-widget select {
+      border-radius: 8px;
+      padding: 8px;
+      font-weight: 700;
+      cursor: pointer;
+      border: none;
+      user-select: none;
+    }
+    #profile-widget button {
+      background: #7b61ff;
+      color: white;
+      flex: 1;
+    }
+    #profile-widget select {
+      background: #2e2e44;
+      color: white;
+      flex: 1;
+    }
+    #profile-widget .flex-row {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+    }
+    #profile-widget .xp-bar-container {
+      background: #444;
+      border-radius: 10px;
+      overflow: hidden;
+      height: 12px;
+      margin-top: 5px;
+    }
+    #profile-widget .xp-bar {
+      height: 12px;
+      background: #7b61ff;
+      width: 0%;
+      transition: width 0.4s ease;
+    }
+    #profile-pic {
+      width: 60px;
+      height: 60px;
+      border-radius: 50%;
+      border: 2px solid #7b61ff;
+      cursor: pointer;
+    }
+
+    /* Shop Panel */
+    #shop-panel {
+      position: fixed;
+      top: 130px; /* below profile */
+      right: 20px;
+      background: #1e1e2f;
+      border-radius: 15px;
+      padding: 15px 20px;
+      width: 280px;
+      max-height: 70vh;
+      overflow-y: auto;
+      box-shadow: 0 0 15px #7b61ffbb;
+      z-index: 99999;
+      color: white;
+      user-select: none;
+    }
+    #shop-panel h2 {
+      margin-top: 0;
+      font-weight: 700;
+      color: #a78bfa;
+    }
+    .shop-item {
+      background: #2e2e44;
+      margin-bottom: 12px;
+      padding: 10px 12px;
+      border-radius: 10px;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+    }
+    .shop-item button {
+      background: #7b61ff;
+      color: white;
+      border: none;
+      border-radius: 8px;
+      padding: 6px 12px;
+      cursor: pointer;
+      font-weight: 600;
+      transition: background 0.3s ease;
+    }
+    .shop-item button:hover {
+      background: #9f85ff;
+    }
+  </style>
+</head>
+<body>
+
+  <!-- Profile Widget -->
+  <div id="profile-widget" aria-label="User Profile and Background Settings">
+    <div class="flex-row">
+      <div style="position: relative;">
+        <img id="profile-pic" src="https://i.pravatar.cc/60" alt="Profile Picture" title="Click to change picture" />
+        <input type="file" id="profile-pic-input" accept="image/*" style="display:none" aria-label="Upload profile picture" />
+      </div>
+      <div style="flex-grow:1;">
+        <input id="profile-name" type="text" maxlength="20" placeholder="Your Name" aria-label="Username" />
+      </div>
+    </div>
+
+    <div style="margin-top: 12px;">
+      <div style="font-weight: 700; font-size: 0.9rem; margin-bottom: 5px;">
+        XP: <span id="xp-text">0 / 9999</span> &nbsp;&nbsp; Level: <span id="level-text">1</span>
+      </div>
+      <div class="xp-bar-container">
+        <div id="xp-bar" class="xp-bar"></div>
+      </div>
+    </div>
+
+    <div style="margin-top: 15px; display: flex; flex-wrap: wrap; gap: 10px; justify-content: space-between;">
+      <button id="toggle-bg-btn">Toggle BG</button>
+      <select id="bg-select" aria-label="Select Background">
+        <!-- Options added dynamically -->
+      </select>
+    </div>
+  </div>
+
+  <!-- Shop Panel -->
+  <div id="shop-panel" aria-label="Engine Bucks Shop">
+    <h2>Shop</h2>
+    <div class="shop-item" data-price="1000" data-item="Cool Live Background 1">
+      <span>Cool Live Background 1</span>
+      <button class="buy-btn">Buy (1000 EB)</button>
+    </div>
+    <div class="shop-item" data-price="1500" data-item="Cool Live Background 2">
+      <span>Cool Live Background 2</span>
+      <button class="buy-btn">Buy (1500 EB)</button>
+    </div>
+    <div class="shop-item" data-price="2000" data-item="Custom Profile Skin">
+      <span>Custom Profile Skin</span>
+      <button class="buy-btn">Buy (2000 EB)</button>
+    </div>
+    <div class="shop-item" data-price="2500" data-item="Special Product">
+      <span>Special Product</span>
+      <button class="buy-btn">Buy (2500 EB)</button>
+    </div>
+    <div id="shop-message" style="margin-top:10px; font-weight:600; color:#ff8080;"></div>
+  </div>
+
+<script>
+  (function() {
+    // Storage keys
+    const STORAGE = {
+      XP: 'ebUserXP',
+      NAME: 'ebUserName',
+      PIC: 'ebUserPic',
+      BG: 'ebChosenBG',
+      BG_ENABLED: 'ebBackgroundEnabled',
+      BALANCE: 'ebUserBalance',
+      PURCHASES: 'ebUserPurchases'
+    };
+
+    const MAX_LEVEL = 9999;
+
+    // Background options
+    const BACKGROUNDS = {
+      'default': 'url("https://images.unsplash.com/photo-1506744038136-46273834b3fb?auto=format&fit=crop&w=1350&q=80") no-repeat center center / cover',
+      'none': 'none',
+      'bg1': 'url("https://images.unsplash.com/photo-1462331940025-496dfbfc7564?auto=format&fit=crop&w=1350&q=80") no-repeat center center / cover',
+      'bg2': 'linear-gradient(270deg, #ff4e50, #f9d423, #1e3c72, #2a5298), url("https://images.unsplash.com/photo-1506744038136-46273834b3fb?auto=format&fit=crop&w=1350&q=80") no-repeat center center / cover'
+    };
+
+    // Elements
+    const xpBar = document.getElementById('xp-bar');
+    const xpText = document.getElementById('xp-text');
+    const levelText = document.getElementById('level-text');
+    const nameInput = document.getElementById('profile-name');
+    const picImg = document.getElementById('profile-pic');
+    const picInput = document.getElementById('profile-pic-input');
+    const toggleBgBtn = document.getElementById('toggle-bg-btn');
+    const bgSelect = document.getElementById('bg-select');
+    const shopPanel = document.getElementById('shop-panel');
+    const shopMessage = document.getElementById('shop-message');
+
+    // Balance display (for demo purposes, create a floating balance)
+    let balance = parseInt(localStorage.getItem(STORAGE.BALANCE)) || 5000;
+
+    // Create and show balance box top-left
+    const balanceBox = document.createElement('div');
+    balanceBox.style.position = 'fixed';
+    balanceBox.style.top = '20px';
+    balanceBox.style.left = '20px';
+    balanceBox.style.background = '#7b61ff';
+    balanceBox.style.color = 'white';
+    balanceBox.style.padding = '10px 20px';
+    balanceBox.style.fontWeight = '700';
+    balanceBox.style.borderRadius = '10px';
+    balanceBox.style.fontSize = '1.2rem';
+    balanceBox.style.userSelect = 'none';
+    balanceBox.textContent = `Balance: ${balance} EB`;
+    document.body.appendChild(balanceBox);
+
+    // Load from localStorage or defaults
+    let xp = parseInt(localStorage.getItem(STORAGE.XP)) || 0;
+    let name = localStorage.getItem(STORAGE.NAME) || '';
+    let pic = localStorage.getItem(STORAGE.PIC) || 'https://i.pravatar.cc/60';
+    let bgChosen = localStorage.getItem(STORAGE.BG) || 'default';
+    let bgEnabled = localStorage.getItem(STORAGE.BG_ENABLED);
+    bgEnabled = bgEnabled === null ? true : (bgEnabled === 'true');
+    let purchases = JSON.parse(localStorage.getItem(STORAGE.PURCHASES)) || {};
+
+    // Update XP bar and text
+    function updateXP() {
+      const level = Math.min(1 + Math.floor(xp / 1000), MAX_LEVEL);
+      const progress = (xp % 1000) / 1000 * 100;
+      xpBar.style.width = `${progress}%`;
+      xpText.textContent = `${xp % 1000} / 999`;
+      levelText.textContent = level;
+    }
+
+    // Apply background based on purchases and selection
+    function applyBackground() {
+      if (bgEnabled && purchases['Cool Live Background 1'] && bgChosen === 'bg1') {
+        document.body.style.background = BACKGROUNDS['bg1'];
+      } else if (bgEnabled && purchases['Cool Live Background 2'] && bgChosen === 'bg2') {
+        document.body.style.background = BACKGROUNDS['bg2'];
+      } else if (bgEnabled && bgChosen === 'default') {
+        document.body.style.background = BACKGROUNDS['default'];
+      } else {
+        document.body.style.background = 'none';
+        if (!bgEnabled) {
+          // fallback background color
+          document.body.style.backgroundColor = '#121212';
+        } else {
+          document.body.style.backgroundColor = 'transparent';
+        }
+      }
+    }
+
+    // Setup background selector options
+    function setupBGSelect() {
+      bgSelect.innerHTML = '';
+
+      // Default background option
+      const defaultOpt = document.createElement('option');
+      defaultOpt.value = 'default';
+      defaultOpt.textContent = 'Default Background';
+      if (bgChosen === 'default') defaultOpt.selected = true;
+      bgSelect.appendChild(defaultOpt);
+
+      // None option
+      const noneOpt = document.createElement('option');
+      noneOpt.value = 'none';
+      noneOpt.textContent = 'No Background';
+      if (bgChosen === 'none') noneOpt.selected = true;
+      bgSelect.appendChild(noneOpt);
+
+      // Purchased backgrounds
+      if (purchases['Cool Live Background 1']) {
+        const opt1 = document.createElement('option');
+        opt1.value = 'bg1';
+        opt1.textContent = 'Cool Live Background 1';
+        if (bgChosen === 'bg1') opt1.selected = true;
+        bgSelect.appendChild(opt1);
+      }
+      if (purchases['Cool Live Background 2']) {
+        const opt2 = document.createElement('option');
+        opt2.value = 'bg2';
+        opt2.textContent = 'Cool Live Background 2';
+        if (bgChosen === 'bg2') opt2.selected = true;
+        bgSelect.appendChild(opt2);
+      }
+    }
+
+    // Save state to localStorage
+    function saveState() {
+      localStorage.setItem(STORAGE.XP, xp);
+      localStorage.setItem(STORAGE.NAME, name);
+      localStorage.setItem(STORAGE.PIC, pic);
+      localStorage.setItem(STORAGE.BG, bgChosen);
+      localStorage.setItem(STORAGE.BG_ENABLED, bgEnabled);
+      localStorage.setItem(STORAGE.BALANCE, balance);
+      localStorage.setItem(STORAGE.PURCHASES, JSON.stringify(purchases));
+    }
+
+    // Handle buying item from shop
+    function buyItem(item, price, btn) {
+      shopMessage.textContent = '';
+      if (purchases[item]) {
+        shopMessage.textContent = `You already own "${item}".`;
+        return;
+      }
+      if (balance < price) {
+        shopMessage.textContent = `Insufficient Engine Bucks to buy "${item}".`;
+        return;
+      }
+      balance -= price;
+      purchases[item] = true;
+      balanceBox.textContent = `Balance: ${balance} EB`;
+      saveState();
+      setupBGSelect();
+      applyBackground();
+      btn.disabled = true;
+      btn.textContent = 'Owned';
+      shopMessage.style.color = '#80ff80';
+      shopMessage.textContent = `Purchased "${item}"!`;
+      setTimeout(() => {
+        shopMessage.textContent = '';
+      }, 4000);
+    }
+
+    // Setup shop buttons
+    function setupShop() {
+      const buttons = shopPanel.querySelectorAll('.buy-btn');
+      buttons.forEach(btn => {
+        const parent = btn.closest('.shop-item');
+        const item = parent.getAttribute('data-item');
+        const price = parseInt(parent.getAttribute('data-price'));
+        if (purchases[item]) {
+          btn.disabled = true;
+          btn.textContent = 'Owned';
+        } else {
+          btn.disabled = false;
+          btn.textContent = `Buy (${price} EB)`;
+          btn.onclick = () => buyItem(item, price, btn);
+        }
+      });
+    }
+
+    // Profile name input
+    nameInput.value = name;
+    nameInput.addEventListener('input', () => {
+      name = nameInput.value;
+      saveState();
+    });
+
+    // Profile pic upload
+    picImg.src = pic;
+    picImg.addEventListener('click', () => picInput.click());
+    picInput.addEventListener('change', e => {
+      const file = e.target.files[0];
+      if (!file) return;
+      if (!file.type.startsWith('image/')) return;
+      const reader = new FileReader();
+      reader.onload = function(evt) {
+        pic = evt.target.result;
+        picImg.src = pic;
+        saveState();
+      };
+      reader.readAsDataURL(file);
+    });
+
+    // Toggle background on/off
+    toggleBgBtn.textContent = bgEnabled ? 'Toggle BG (On)' : 'Toggle BG (Off)';
+    toggleBgBtn.addEventListener('click', () => {
+      bgEnabled = !bgEnabled;
+      toggleBgBtn.textContent = bgEnabled ? 'Toggle BG (On)' : 'Toggle BG (Off)';
+      applyBackground();
+      saveState();
+    });
+
+    // Background selector change
+    bgSelect.addEventListener('change', () => {
+      bgChosen = bgSelect.value;
+      applyBackground();
+      saveState();
+    });
+
+    // Demo: XP increment every 5 seconds
+    setInterval(() => {
+      xp = Math.min(xp + 25, MAX_LEVEL * 1000);
+      updateXP();
+      saveState();
+    }, 5000);
+
+    // Init
+    updateXP();
+    setupBGSelect();
+    applyBackground();
+    setupShop();
+  })();
+</script>
+
+</body>
+</html>

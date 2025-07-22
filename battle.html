@@ -1,0 +1,618 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Case Battles - Engine Bucks</title>
+  <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;600&display=swap" rel="stylesheet" />
+  <style>
+    body {
+      font-family: 'Poppins', sans-serif;
+      background: #121212;
+      color: white;
+      text-align: center;
+      padding: 40px;
+    }
+    .balance {
+      position: fixed;
+      top: 20px;
+      right: 20px;
+      background: #7b61ff;
+      padding: 15px 25px;
+      border-radius: 10px;
+      font-weight: 700;
+      font-size: 1.3rem;
+      color: white;
+    }
+    h1 {
+      color: #a78bfa;
+      margin-bottom: 15px;
+    }
+    select, button {
+      background: #7b61ff;
+      color: white;
+      padding: 10px 18px;
+      border: none;
+      border-radius: 8px;
+      font-size: 1rem;
+      cursor: pointer;
+      margin: 10px 5px;
+      transition: background-color 0.3s ease;
+    }
+    select:hover, button:hover {
+      background: #9f85ff;
+    }
+    #slots {
+      margin: 25px auto 10px;
+      display: flex;
+      justify-content: center;
+      gap: 12px;
+      max-width: 600px;
+      flex-wrap: nowrap;
+    }
+    .slot {
+      background: #2a2a44;
+      border-radius: 12px;
+      padding: 15px 10px;
+      min-width: 110px;
+      font-weight: 600;
+      font-size: 1rem;
+      height: 70px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      user-select: none;
+      color: #ddd;
+      box-shadow: 0 0 10px #7b61ffaa;
+      white-space: nowrap;
+    }
+    #result {
+      margin-top: 18px;
+      font-size: 1.3rem;
+      font-weight: bold;
+      min-height: 1.8em;
+      color: #a0ffa0;
+    }
+  </style>
+</head>
+<body>
+  <div class="balance" id="eb-balance">Balance: 5000 EB</div>
+  <h1>Case Battles</h1>
+
+  <label for="case-select">Select Case:</label>
+  <select id="case-select">
+    <option value="10">10 EB Case</option>
+    <option value="25">25 EB Case</option>
+    <option value="50">50 EB Case</option>
+    <option value="100">100 EB Case</option>
+    <option value="1000">1,000 EB Case</option>
+    <option value="5000">5,000 EB Case</option>
+    <option value="10000000">10,000,000 EB Case</option>
+  </select>
+  <button id="battle-btn">Create Battle</button>
+
+  <div id="slots">
+    <div class="slot">?</div>
+    <div class="slot">?</div>
+    <div class="slot">?</div>
+    <div class="slot">?</div>
+    <div class="slot">?</div>
+  </div>
+  <div id="result"></div>
+
+<script>
+  const STORAGE_KEY = 'engineBucksBalance';
+  let balance = 5000;
+
+const rewardsByCase = {
+    10: [
+      { item: '🍬 Candy', value: 15, weight: 20 },
+      { item: '🍭 Lollipop', value: 10, weight: 25 },
+      { item: '🍪 Cookie', value: 8, weight: 30 },
+      { item: '🎖️ Tiny Medal', value: 20, weight: 10 },
+      { item: '😢 Nothing', value: 0, weight: 50 },
+      { item: '💀 Bad Luck', value: -5, weight: 50 },
+      // added more 44 items below
+      { item: '🥤 Small Drink', value: 7, weight: 35 },
+      { item: '🍎 Apple', value: 9, weight: 32 },
+      { item: '🍌 Banana', value: 9, weight: 33 },
+      { item: '🍉 Watermelon', value: 11, weight: 20 },
+      { item: '🍒 Cherries', value: 12, weight: 18 },
+      { item: '🍇 Grapes', value: 13, weight: 17 },
+      { item: '🍓 Strawberry', value: 14, weight: 16 },
+      { item: '🥕 Carrot', value: 10, weight: 25 },
+      { item: '🌽 Corn', value: 12, weight: 22 },
+      { item: '🥔 Potato', value: 11, weight: 23 },
+      { item: '🍞 Bread', value: 13, weight: 18 },
+      { item: '🥖 Baguette', value: 15, weight: 14 },
+      { item: '🧀 Cheese', value: 16, weight: 12 },
+      { item: '🥚 Egg', value: 14, weight: 20 },
+      { item: '🍗 Chicken Leg', value: 18, weight: 10 },
+      { item: '🍖 Ribs', value: 20, weight: 8 },
+      { item: '🍤 Shrimp', value: 22, weight: 7 },
+      { item: '🍣 Sushi', value: 25, weight: 6 },
+      { item: '🍜 Noodles', value: 19, weight: 9 },
+      { item: '🥗 Salad', value: 17, weight: 11 },
+      { item: '🍰 Cake Slice', value: 20, weight: 8 },
+      { item: '🍩 Donut', value: 18, weight: 10 },
+      { item: '🍪 Chocolate Chip', value: 16, weight: 12 },
+      { item: '🍫 Chocolate Bar', value: 21, weight: 7 },
+      { item: '🍬 Lollipop (Rare)', value: 23, weight: 5 },
+      { item: '🍭 Candy Cane', value: 24, weight: 5 },
+      { item: '🎂 Birthday Cake', value: 26, weight: 4 },
+      { item: '🍯 Honey Jar', value: 19, weight: 9 },
+      { item: '🥛 Milk Bottle', value: 12, weight: 22 },
+      { item: '🍵 Tea Cup', value: 13, weight: 20 },
+      { item: '☕ Coffee Cup', value: 15, weight: 18 },
+      { item: '🥤 Juice Box', value: 14, weight: 19 },
+      { item: '🧃 Fruit Juice', value: 16, weight: 15 },
+      { item: '🍺 Beer Mug', value: 22, weight: 7 },
+      { item: '🍷 Wine Glass', value: 23, weight: 6 },
+      { item: '🥂 Champagne', value: 25, weight: 5 },
+      { item: '🍸 Martini', value: 24, weight: 5 },
+      { item: '🍹 Cocktail', value: 26, weight: 4 },
+      { item: '🍾 Bottle', value: 27, weight: 3 },
+      { item: '🥃 Whiskey', value: 28, weight: 2 },
+      { item: '🧊 Ice Cube', value: 5, weight: 40 }
+    ],
+    25: [
+      { item: '🎉 Small Trophy', value: 40, weight: 15 },
+      { item: '🍫 Chocolate', value: 30, weight: 20 },
+      { item: '🍩 Donut', value: 25, weight: 25 },
+      { item: '🏅 Medal', value: 50, weight: 10 },
+      { item: '😢 Nothing', value: 0, weight: 50 },
+      { item: '💀 Bad Luck', value: -10, weight: 50 },
+      // +44 items
+      { item: '⚽ Soccer Ball', value: 28, weight: 25 },
+      { item: '🏀 Basketball', value: 30, weight: 23 },
+      { item: '🏈 Football', value: 32, weight: 21 },
+      { item: '🎾 Tennis Ball', value: 27, weight: 26 },
+      { item: '🏐 Volleyball', value: 29, weight: 22 },
+      { item: '🎱 Pool Ball', value: 35, weight: 18 },
+      { item: '🥎 Softball', value: 34, weight: 19 },
+      { item: '🏓 Ping Pong Ball', value: 25, weight: 28 },
+      { item: '🎳 Bowling Ball', value: 40, weight: 15 },
+      { item: '🥅 Goal Net', value: 38, weight: 16 },
+      { item: '🥇 Gold Medal', value: 50, weight: 12 },
+      { item: '🥈 Silver Medal', value: 45, weight: 13 },
+      { item: '🥉 Bronze Medal', value: 40, weight: 15 },
+      { item: '🎖️ Ribbon', value: 37, weight: 17 },
+      { item: '🏆 Cup Trophy', value: 55, weight: 10 },
+      { item: '🛡️ Shield', value: 48, weight: 14 },
+      { item: '⚔️ Sword', value: 52, weight: 12 },
+      { item: '🏹 Bow', value: 47, weight: 15 },
+      { item: '🗡️ Dagger', value: 43, weight: 18 },
+      { item: '🪓 Axe', value: 50, weight: 12 },
+      { item: '🛡️ Knight Shield', value: 49, weight: 13 },
+      { item: '🎯 Dart', value: 31, weight: 20 },
+      { item: '🪃 Boomerang', value: 33, weight: 19 },
+      { item: '🪀 Yo-Yo', value: 29, weight: 21 },
+      { item: '🛴 Scooter', value: 44, weight: 16 },
+      { item: '🚲 Bicycle', value: 50, weight: 12 },
+      { item: '🛹 Skateboard', value: 48, weight: 13 },
+      { item: '🎮 Game Controller', value: 51, weight: 11 },
+      { item: '🎲 Dice', value: 30, weight: 22 },
+      { item: '🧩 Puzzle', value: 35, weight: 18 },
+      { item: '📯 Horn', value: 42, weight: 15 },
+      { item: '🎺 Trumpet', value: 46, weight: 14 },
+      { item: '🎸 Guitar', value: 53, weight: 11 },
+      { item: '🎻 Violin', value: 50, weight: 13 },
+      { item: '🥁 Drum', value: 48, weight: 14 },
+      { item: '📚 Book', value: 28, weight: 23 },
+      { item: '🖋️ Pen', value: 26, weight: 25 },
+      { item: '📎 Paperclip', value: 20, weight: 30 },
+      { item: '📌 Pin', value: 22, weight: 28 },
+      { item: '📅 Calendar', value: 30, weight: 22 },
+      { item: '🗂️ Folder', value: 35, weight: 20 },
+      { item: '📁 File', value: 38, weight: 18 },
+      { item: '📂 Open Folder', value: 40, weight: 17 },
+      { item: '📤 Outbox', value: 42, weight: 16 },
+      { item: '📥 Inbox', value: 45, weight: 15 },
+      { item: '📦 Box', value: 50, weight: 13 },
+      { item: '📫 Mailbox', value: 48, weight: 14 },
+      { item: '📪 Mailbox with Mail', value: 52, weight: 12 },
+      { item: '📮 Postbox', value: 55, weight: 10 },
+      { item: '🗳️ Ballot Box', value: 53, weight: 11 }
+    ],
+    50: [
+      { item: '💎 Small Gem', value: 70, weight: 15 },
+      { item: '🔮 Magic Orb', value: 90, weight: 10 },
+      { item: '🏅 Medal', value: 80, weight: 12 },
+      { item: '😢 Nothing', value: 0, weight: 50 },
+      { item: '💀 Bad Luck', value: -20, weight: 50 },
+      // +45 items
+      { item: '📿 Necklace', value: 85, weight: 11 },
+      { item: '💍 Ring', value: 90, weight: 10 },
+      { item: '🛡️ Shield', value: 95, weight: 9 },
+      { item: '⚔️ Sword', value: 100, weight: 8 },
+      { item: '🪓 Axe', value: 88, weight: 11 },
+      { item: '🏹 Bow', value: 85, weight: 12 },
+      { item: '🗡️ Dagger', value: 80, weight: 13 },
+      { item: '🏆 Trophy', value: 105, weight: 7 },
+      { item: '🎖️ Medal', value: 78, weight: 14 },
+      { item: '📚 Ancient Tome', value: 92, weight: 10 },
+      { item: '🧙 Wizard Hat', value: 100, weight: 8 },
+      { item: '🧛 Vampire Fang', value: 110, weight: 6 },
+      { item: '🧟 Zombie Brain', value: 75, weight: 14 },
+      { item: '🧜 Mermaid Scale', value: 95, weight: 9 },
+      { item: '🧞 Genie Lamp', value: 115, weight: 6 },
+      { item: '💼 Briefcase', value: 70, weight: 15 },
+      { item: '👜 Purse', value: 68, weight: 16 },
+      { item: '🎩 Top Hat', value: 72, weight: 15 },
+      { item: '👑 Crown', value: 120, weight: 5 },
+      { item: '🦄 Unicorn Horn', value: 125, weight: 4 },
+      { item: '🐉 Dragon Scale', value: 130, weight: 4 },
+      { item: '🦅 Eagle Feather', value: 90, weight: 10 },
+      { item: '🕯️ Candle', value: 70, weight: 14 },
+      { item: '⚗️ Flask', value: 80, weight: 13 },
+      { item: '🔫 Pistol', value: 110, weight: 6 },
+      { item: '🔨 Hammer', value: 85, weight: 11 },
+      { item: '🪓 Battle Axe', value: 115, weight: 6 },
+      { item: '🛡️ Knight Shield', value: 105, weight: 7 },
+      { item: '🎯 Target', value: 70, weight: 15 },
+      { item: '🎲 Game Dice', value: 75, weight: 14 },
+      { item: '🧩 Puzzle Piece', value: 80, weight: 12 },
+      { item: '📯 Horn', value: 90, weight: 10 },
+      { item: '🎺 Trumpet', value: 95, weight: 9 },
+      { item: '🎸 Guitar', value: 100, weight: 8 },
+      { item: '🎻 Violin', value: 105, weight: 7 },
+      { item: '🥁 Drum', value: 110, weight: 6 },
+      { item: '🛳️ Ship', value: 120, weight: 5 },
+      { item: '🚀 Rocket', value: 125, weight: 4 },
+      { item: '🚁 Helicopter', value: 130, weight: 4 },
+      { item: '🏰 Castle', value: 140, weight: 3 },
+      { item: '🗼 Tower', value: 135, weight: 4 },
+      { item: '🎡 Ferris Wheel', value: 125, weight: 4 },
+      { item: '🎢 Roller Coaster', value: 130, weight: 4 },
+      { item: '🎠 Carousel', value: 120, weight: 5 },
+      { item: '🎪 Circus Tent', value: 110, weight: 6 },
+      { item: '🎭 Mask', value: 105, weight: 7 },
+      { item: '🎨 Paint Palette', value: 90, weight: 9 }
+    ],
+    100: [
+      { item: '💰 Small Chest', value: 200, weight: 15 },
+      { item: '💎 Gemstone', value: 250, weight: 12 },
+      { item: '🔮 Magic Crystal', value: 230, weight: 13 },
+      { item: '🏆 Golden Trophy', value: 280, weight: 10 },
+      { item: '😢 Nothing', value: 0, weight: 50 },
+      { item: '💀 Bad Luck', value: -40, weight: 50 },
+      // +44 items
+      { item: '👑 Royal Crown', value: 320, weight: 8 },
+      { item: '⚔️ Legendary Sword', value: 350, weight: 6 },
+      { item: '🛡️ Dragon Shield', value: 340, weight: 7 },
+      { item: '🧙‍♂️ Wizard Staff', value: 330, weight: 8 },
+      { item: '🦄 Unicorn', value: 360, weight: 5 },
+      { item: '🐉 Dragon Egg', value: 370, weight: 4 },
+      { item: '🚀 Spaceship', value: 380, weight: 4 },
+      { item: '🏰 Fortress', value: 390, weight: 3 },
+      { item: '🎖️ Medal of Honor', value: 310, weight: 9 },
+      { item: '🎯 Bullseye', value: 270, weight: 11 },
+      { item: '📚 Ancient Book', value: 260, weight: 12 },
+      { item: '🎲 Dice Set', value: 240, weight: 13 },
+      { item: '🎮 Game Console', value: 280, weight: 10 },
+      { item: '🏅 Sports Medal', value: 230, weight: 14 },
+      { item: '🚁 Helicopter', value: 300, weight: 9 },
+      { item: '🛳️ Luxury Yacht', value: 400, weight: 2 },
+      { item: '🎡 Amusement Park', value: 350, weight: 5 },
+      { item: '🎢 Roller Coaster', value: 320, weight: 7 },
+      { item: '🎠 Carousel', value: 310, weight: 8 },
+      { item: '🎪 Circus', value: 300, weight: 9 },
+      { item: '🎭 Theater Mask', value: 280, weight: 10 },
+      { item: '🎨 Masterpiece', value: 270, weight: 11 },
+      { item: '🎬 Movie Reel', value: 260, weight: 12 },
+      { item: '📯 Bugle', value: 250, weight: 13 },
+      { item: '🎺 Trumpet', value: 240, weight: 14 },
+      { item: '🎸 Electric Guitar', value: 230, weight: 15 },
+      { item: '🎻 Stradivarius', value: 400, weight: 2 },
+      { item: '🥁 Drum Set', value: 350, weight: 4 },
+      { item: '🖼️ Painting', value: 300, weight: 6 },
+      { item: '🛍️ Shopping Bag', value: 200, weight: 15 },
+      { item: '📦 Parcel', value: 180, weight: 17 },
+      { item: '📫 Mailbox', value: 170, weight: 18 },
+      { item: '📤 Outbox Tray', value: 160, weight: 19 },
+      { item: '📥 Inbox Tray', value: 150, weight: 20 },
+      { item: '📅 Calendar', value: 140, weight: 21 },
+      { item: '📎 Paperclip', value: 130, weight: 22 },
+      { item: '🖋️ Fountain Pen', value: 120, weight: 23 },
+      { item: '📌 Thumbtack', value: 110, weight: 24 },
+      { item: '🗂️ File Folder', value: 100, weight: 25 },
+      { item: '🧾 Receipt', value: 90, weight: 26 },
+      { item: '📑 Bookmark', value: 80, weight: 27 },
+      { item: '🗒️ Notepad', value: 70, weight: 28 },
+      { item: '📓 Diary', value: 60, weight: 29 },
+      { item: '📔 Journal', value: 50, weight: 30 },
+      { item: '📕 Book', value: 40, weight: 31 },
+      { item: '📗 Green Book', value: 55, weight: 28 },
+      { item: '📘 Blue Book', value: 65, weight: 26 },
+      { item: '📙 Orange Book', value: 75, weight: 24 }
+    ], 
+
+   5000: [
+      { item: '💰 Small Chest', value: 200, weight: 15 },
+      { item: '💎 Gemstone', value: 250, weight: 12 },
+      { item: '🔮 Magic Crystal', value: 230, weight: 13 },
+      { item: '🏆 Golden Trophy', value: 280, weight: 10 },
+      { item: '😢 Nothing', value: 0, weight: 50 },
+      { item: '💀 Bad Luck', value: -40, weight: 50 },
+      // +44 items
+      { item: '👑 Royal Crown', value: 320, weight: 8 },
+      { item: '⚔️ Legendary Sword', value: 350, weight: 6 },
+      { item: '🛡️ Dragon Shield', value: 340, weight: 7 },
+      { item: '🧙‍♂️ Wizard Staff', value: 330, weight: 8 },
+      { item: '🦄 Unicorn', value: 360, weight: 5 },
+      { item: '🐉 Dragon Egg', value: 370, weight: 4 },
+      { item: '🚀 Spaceship', value: 380, weight: 4 },
+      { item: '🏰 Fortress', value: 390, weight: 3 },
+      { item: '🎖️ Medal of Honor', value: 310, weight: 9 },
+      { item: '🎯 Bullseye', value: 270, weight: 11 },
+      { item: '📚 Ancient Book', value: 260, weight: 12 },
+      { item: '🎲 Dice Set', value: 240, weight: 13 },
+      { item: '🎮 Game Console', value: 280, weight: 10 },
+      { item: '🏅 Sports Medal', value: 230, weight: 14 },
+      { item: '🚁 Helicopter', value: 300, weight: 9 },
+      { item: '🛳️ Luxury Yacht', value: 400, weight: 2 },
+      { item: '🎡 Amusement Park', value: 350, weight: 5 },
+      { item: '🎢 Roller Coaster', value: 320, weight: 7 },
+      { item: '🎠 Carousel', value: 310, weight: 8 },
+      { item: '🎪 Circus', value: 300, weight: 9 },
+      { item: '🎭 Theater Mask', value: 280, weight: 10 },
+      { item: '🎨 Masterpiece', value: 270, weight: 11 },
+      { item: '🎬 Movie Reel', value: 260, weight: 12 },
+      { item: '📯 Bugle', value: 250, weight: 13 },
+      { item: '🎺 Trumpet', value: 240, weight: 14 },
+      { item: '🎸 Electric Guitar', value: 230, weight: 15 },
+      { item: '🎻 Stradivarius', value: 400, weight: 2 },
+      { item: '🥁 Drum Set', value: 350, weight: 4 },
+      { item: '🖼️ Painting', value: 300, weight: 6 },
+      { item: '🛍️ Shopping Bag', value: 200, weight: 15 },
+      { item: '📦 Parcel', value: 180, weight: 17 },
+      { item: '📫 Mailbox', value: 170, weight: 18 },
+      { item: '📤 Outbox Tray', value: 160, weight: 19 },
+      { item: '📥 Inbox Tray', value: 150, weight: 20 },
+      { item: '📅 Calendar', value: 140, weight: 21 },
+      { item: '📎 Paperclip', value: 130, weight: 22 },
+      { item: '🖋️ Fountain Pen', value: 120, weight: 23 },
+      { item: '📌 Thumbtack', value: 110, weight: 24 },
+      { item: '🗂️ File Folder', value: 100, weight: 25 },
+      { item: '🧾 Receipt', value: 90, weight: 26 },
+      { item: '📑 Bookmark', value: 80, weight: 27 },
+      { item: '🗒️ Notepad', value: 70, weight: 28 },
+      { item: '📓 Diary', value: 60, weight: 29 },
+      { item: '📔 Journal', value: 50, weight: 30 },
+      { item: '📕 Book', value: 40, weight: 31 },
+      { item: '📗 Green Book', value: 55, weight: 28 },
+      { item: '📘 Blue Book', value: 65, weight: 26 },
+      { item: '📙 Orange Book', value: 75, weight: 24 }
+    ],
+
+
+       10000000: [
+      { item: '💰 Small Chest', value: 200, weight: 15 },
+      { item: '💎 Gemstone', value: 250, weight: 12 },
+      { item: '🔮 Magic Crystal', value: 230, weight: 13 },
+      { item: '🏆 Golden Trophy', value: 280, weight: 10 },
+      { item: '😢 Nothing', value: 0, weight: 50 },
+      { item: '💀 Bad Luck', value: -40, weight: 50 },
+      // +44 items
+      { item: '👑 Royal Crown', value: 320, weight: 8 },
+      { item: '⚔️ Legendary Sword', value: 350, weight: 6 },
+      { item: '🛡️ Dragon Shield', value: 340, weight: 7 },
+      { item: '🧙‍♂️ Wizard Staff', value: 330, weight: 8 },
+      { item: '🦄 Unicorn', value: 360, weight: 5 },
+      { item: '🐉 Dragon Egg', value: 370, weight: 4 },
+      { item: '🚀 Spaceship', value: 380, weight: 4 },
+      { item: '🏰 Fortress', value: 390, weight: 3 },
+      { item: '🎖️ Medal of Honor', value: 310, weight: 9 },
+      { item: '🎯 Bullseye', value: 270, weight: 11 },
+      { item: '📚 Ancient Book', value: 260, weight: 12 },
+      { item: '🎲 Dice Set', value: 240, weight: 13 },
+      { item: '🎮 Game Console', value: 280, weight: 10 },
+      { item: '🏅 Sports Medal', value: 230, weight: 14 },
+      { item: '🚁 Helicopter', value: 300, weight: 9 },
+      { item: '🛳️ Luxury Yacht', value: 400, weight: 2 },
+      { item: '🎡 Amusement Park', value: 350, weight: 5 },
+      { item: '🎢 Roller Coaster', value: 320, weight: 7 },
+      { item: '🎠 Carousel', value: 310, weight: 8 },
+      { item: '🎪 Circus', value: 300, weight: 9 },
+      { item: '🎭 Theater Mask', value: 280, weight: 10 },
+      { item: '🎨 Masterpiece', value: 270, weight: 11 },
+      { item: '🎬 Movie Reel', value: 260, weight: 12 },
+      { item: '📯 Bugle', value: 250, weight: 13 },
+      { item: '🎺 Trumpet', value: 240, weight: 14 },
+      { item: '🎸 Electric Guitar', value: 230, weight: 15 },
+      { item: '🎻 Stradivarius', value: 400, weight: 2 },
+      { item: '🥁 Drum Set', value: 350, weight: 4 },
+      { item: '🖼️ Painting', value: 300, weight: 6 },
+      { item: '🛍️ Shopping Bag', value: 200, weight: 15 },
+      { item: '📦 Parcel', value: 180, weight: 17 },
+      { item: '📫 Mailbox', value: 170, weight: 18 },
+      { item: '📤 Outbox Tray', value: 160, weight: 19 },
+      { item: '📥 Inbox Tray', value: 150, weight: 20 },
+      { item: '📅 Calendar', value: 140, weight: 21 },
+      { item: '📎 Paperclip', value: 130, weight: 22 },
+      { item: '🖋️ Fountain Pen', value: 120, weight: 23 },
+      { item: '📌 Thumbtack', value: 110, weight: 24 },
+      { item: '🗂️ File Folder', value: 100, weight: 25 },
+      { item: '🧾 Receipt', value: 90, weight: 26 },
+      { item: '📑 Bookmark', value: 80, weight: 27 },
+      { item: '🗒️ Notepad', value: 70, weight: 28 },
+      { item: '📓 Diary', value: 60, weight: 29 },
+      { item: '📔 Journal', value: 50, weight: 30 },
+      { item: '📕 Book', value: 40, weight: 31 },
+      { item: '📗 Green Book', value: 55, weight: 28 },
+      { item: '📘 Blue Book', value: 65, weight: 26 },
+      { item: '📙 Orange Book', value: 75, weight: 24 }
+    ],
+
+    1000: [
+      { item: '🚗 Sports Car', value: 1500, weight: 15 },
+      { item: '🏰 Castle', value: 2000, weight: 12 },
+      { item: '🛳️ Yacht', value: 1800, weight: 13 },
+      { item: '🦄 Unicorn', value: 2200, weight: 10 },
+      { item: '🐉 Dragon', value: 2500, weight: 8 },
+      { item: '💎 Giant Gem', value: 2100, weight: 10 },
+      { item: '🛡️ Legendary Shield', value: 1900, weight: 12 },
+      { item: '⚔️ Mythical Sword', value: 2400, weight: 8 },
+      { item: '🚀 Rocket Ship', value: 2600, weight: 7 },
+      { item: '🏆 World Trophy', value: 2300, weight: 9 },
+      // +40 items
+      { item: '🛸 UFO', value: 2550, weight: 7 },
+      { item: '🎩 Wizard Hat', value: 1850, weight: 13 },
+      { item: '🎮 Gaming PC', value: 1700, weight: 15 },
+      { item: '🎰 Slot Machine', value: 1600, weight: 17 },
+      { item: '📡 Satellite Dish', value: 2100, weight: 11 },
+      { item: '🛰️ Spacecraft', value: 2300, weight: 10 },
+      { item: '🚤 Speed Boat', value: 1800, weight: 13 },
+      { item: '🛵 Scooter', value: 1500, weight: 15 },
+      { item: '🚜 Tractor', value: 1400, weight: 16 },
+      { item: '🏍️ Motorcycle', value: 1600, weight: 14 },
+      { item: '🚲 Bicycle', value: 1300, weight: 17 },
+      { item: '🛴 Kick Scooter', value: 1200, weight: 18 },
+      { item: '🛹 Skateboard', value: 1100, weight: 19 },
+      { item: '🧩 Puzzle', value: 1000, weight: 20 },
+      { item: '🧸 Teddy Bear', value: 900, weight: 21 },
+      { item: '🎲 Dice', value: 800, weight: 22 },
+      { item: '🎯 Dartboard', value: 750, weight: 23 },
+      { item: '📚 Book Stack', value: 700, weight: 24 },
+      { item: '🖼️ Artwork', value: 650, weight: 25 },
+      { item: '🛍️ Shopping Bag', value: 600, weight: 26 },
+      { item: '📦 Package', value: 550, weight: 27 },
+      { item: '📫 Mailbox', value: 500, weight: 28 },
+      { item: '📤 Outbox', value: 450, weight: 29 },
+      { item: '📥 Inbox', value: 400, weight: 30 },
+      { item: '📅 Calendar', value: 350, weight: 31 },
+      { item: '📎 Paperclip', value: 300, weight: 32 },
+      { item: '🖋️ Pen', value: 250, weight: 33 },
+      { item: '📌 Pin', value: 200, weight: 34 },
+      { item: '🗂️ Folder', value: 150, weight: 35 },
+      { item: '📁 File', value: 100, weight: 36 },
+      { item: '📂 Open Folder', value: 80, weight: 37 },
+      { item: '📤 Outbox Tray', value: 60, weight: 38 },
+      { item: '📥 Inbox Tray', value: 50, weight: 39 },
+      { item: '📦 Box', value: 40, weight: 40 },
+      { item: '📫 Mailbox', value: 30, weight: 41 },
+      { item: '📪 Mailbox with Mail', value: 20, weight: 42 },
+      { item: '📮 Postbox', value: 10, weight: 43 },
+      { item: '🗳️ Ballot Box', value: 5, weight: 44 }
+    ]
+  }
+
+  const slots = [...document.querySelectorAll('.slot')];
+  const balanceDiv = document.getElementById('eb-balance');
+  const resultDiv = document.getElementById('result');
+  const caseSelect = document.getElementById('case-select');
+  const battleBtn = document.getElementById('battle-btn');
+
+  function loadBalance() {
+    const saved = localStorage.getItem(STORAGE_KEY);
+    if (saved) balance = parseInt(saved);
+    updateBalance();
+  }
+
+  function saveBalance() {
+    localStorage.setItem(STORAGE_KEY, balance);
+  }
+
+  function updateBalance() {
+    balanceDiv.textContent = `Balance: ${balance} EB`;
+  }
+
+  // Weighted random helper
+  function weightedRandom(items) {
+    const totalWeight = items.reduce((sum, i) => sum + i.weight, 0);
+    let rand = Math.random() * totalWeight;
+    for (let i of items) {
+      if (rand < i.weight) return i;
+      rand -= i.weight;
+    }
+  }
+
+  // Spin each slot with some delay
+  function spinSlot(slot, reward, delay) {
+    return new Promise((resolve) => {
+      let count = 0;
+      const maxCycles = 15 + delay * 5;
+      const interval = setInterval(() => {
+        const randomIndex = Math.floor(Math.random() * rewardsByCase[caseSelect.value].length);
+        slot.textContent = rewardsByCase[caseSelect.value][randomIndex].item;
+        count++;
+        if (count > maxCycles) {
+          clearInterval(interval);
+          slot.textContent = reward.item;
+          resolve(reward);
+        }
+      }, 70);
+    });
+  }
+
+  async function createBattle() {
+    const caseCost = parseInt(caseSelect.value);
+    if (balance < caseCost) {
+      resultDiv.style.color = '#ff7070';
+      resultDiv.textContent = `You need at least ${caseCost} EB to create a battle.`;
+      return;
+    }
+    battleBtn.disabled = true;
+    resultDiv.style.color = '#a0ffa0';
+    resultDiv.textContent = 'Creating battle... good luck!';
+
+    balance -= caseCost;
+    updateBalance();
+    saveBalance();
+
+    const caseRewards = rewardsByCase[caseCost];
+
+    // Your rewards: pick 5 weighted random
+    let yourRewards = [];
+    for (let i = 0; i < 5; i++) {
+      yourRewards.push(weightedRandom(caseRewards));
+    }
+
+    // AI opponent rewards: same
+    let aiRewards = [];
+    for (let i = 0; i < 5; i++) {
+      aiRewards.push(weightedRandom(caseRewards));
+    }
+
+    // Spin slots to reveal your rewards
+    for (let i = 0; i < 5; i++) {
+      await spinSlot(slots[i], yourRewards[i], i);
+    }
+
+    // Calculate total value for both
+    const yourTotal = yourRewards.reduce((sum, r) => sum + r.value, 0);
+    const aiTotal = aiRewards.reduce((sum, r) => sum + r.value, 0);
+
+    // Outcome: highest total loses!
+    let message = '';
+    if (yourTotal < aiTotal) {
+      // You win: get 2x the cost as reward
+      const winnings = caseCost * 2;
+      balance += winnings;
+      message = `You win! Your total: ${yourTotal} EB vs Opponent's total: ${aiTotal} EB. You earned ${winnings} EB!`;
+      resultDiv.style.color = '#a0ffa0';
+    } else if (yourTotal > aiTotal) {
+      message = `You lose. Your total: ${yourTotal} EB vs Opponent's total: ${aiTotal} EB. Better luck next time!`;
+      resultDiv.style.color = '#ff7070';
+    } else {
+      // Draw - refund cost
+      balance += caseCost;
+      message = `It's a draw! Both totals are ${yourTotal} EB. Your EB refunded.`;
+      resultDiv.style.color = '#ffff70';
+    }
+    updateBalance();
+    saveBalance();
+
+    // Show AI rewards in console (or you can add a section to display them)
+    console.log('AI Rewards:', aiRewards.map(r => r.item).join(', '));
+
+    resultDiv.textContent = message;
+    battleBtn.disabled = false;
+  }
+
+  battleBtn.addEventListener('click', createBattle);
+
+  window.onload = loadBalance;
+</script>
+</body>
+</html>

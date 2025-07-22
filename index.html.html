@@ -1,0 +1,142 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Engine Bucks - Home</title>
+  <style>
+    html, body {
+      margin: 0;
+      padding: 0;
+      overflow: hidden;
+      height: 100%;
+      font-family: 'Poppins', sans-serif;
+      background: radial-gradient(ellipse at center, #d0d4db 0%, #a1a6b3 100%);
+      animation: pulseBg 8s ease-in-out infinite alternate;
+    }
+
+    @keyframes pulseBg {
+      0% { background: radial-gradient(circle at center, #f0f2f7 0%, #a1a6b3 100%); }
+      100% { background: radial-gradient(circle at center, #c2c6cf 0%, #6e7383 100%); }
+    }
+
+    canvas {
+      position: absolute;
+      top: 0;
+      left: 0;
+      z-index: 0;
+    }
+
+    .content {
+      position: relative;
+      z-index: 1;
+      height: 100vh;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      flex-direction: column;
+      text-align: center;
+    }
+
+    .logo {
+      width: 150px;
+      margin-bottom: 40px;
+      animation: pulseLogo 4s ease-in-out infinite alternate;
+    }
+
+    @keyframes pulseLogo {
+      0% { transform: scale(1); filter: drop-shadow(0 0 10px #7b61ff); }
+      100% { transform: scale(1.05); filter: drop-shadow(0 0 20px #a78bfa); }
+    }
+
+    .btn-enter {
+      background: #a78bfa;
+      color: white;
+      padding: 20px 50px;
+      font-size: 1.5rem;
+      border: none;
+      border-radius: 12px;
+      cursor: pointer;
+      box-shadow: 0 0 20px #a78bfa;
+      transition: transform 0.3s, box-shadow 0.3s;
+    }
+
+    .btn-enter:hover {
+      transform: scale(1.05);
+      box-shadow: 0 0 30px #cbb0ff;
+    }
+  </style>
+</head>
+<body>
+  <canvas id="starfield"></canvas>
+  <div class="content">
+    <img src="cybsi-sidebar.png" alt="Engine Bucks Logo" class="logo" />
+    <button class="btn-enter" onclick="location.href='main.html'">Enter Engine Bucks</button>
+  </div>
+
+  <script>
+    const canvas = document.getElementById("starfield");
+    const ctx = canvas.getContext("2d");
+    let nodes = [];
+
+    function resizeCanvas() {
+      canvas.width = window.innerWidth;
+      canvas.height = window.innerHeight;
+      initNodes();
+    }
+
+    function initNodes(count = 100) {
+      nodes = [];
+      for (let i = 0; i < count; i++) {
+        nodes.push({
+          x: Math.random() * canvas.width,
+          y: Math.random() * canvas.height,
+          vx: (Math.random() - 0.5) * 0.5,
+          vy: (Math.random() - 0.5) * 0.5
+        });
+      }
+    }
+
+    function draw() {
+      ctx.clearRect(0, 0, canvas.width, canvas.height);
+      ctx.fillStyle = "rgba(255, 255, 255, 0.5)";
+
+      for (let node of nodes) {
+        ctx.beginPath();
+        ctx.arc(node.x, node.y, 2, 0, Math.PI * 2);
+        ctx.fill();
+      }
+
+      for (let i = 0; i < nodes.length; i++) {
+        for (let j = i + 1; j < nodes.length; j++) {
+          const dx = nodes[i].x - nodes[j].x;
+          const dy = nodes[i].y - nodes[j].y;
+          const dist = Math.sqrt(dx * dx + dy * dy);
+          if (dist < 120) {
+            ctx.strokeStyle = `rgba(255, 255, 255, ${1 - dist / 120})`;
+            ctx.lineWidth = 0.5;
+            ctx.beginPath();
+            ctx.moveTo(nodes[i].x, nodes[i].y);
+            ctx.lineTo(nodes[j].x, nodes[j].y);
+            ctx.stroke();
+          }
+        }
+      }
+
+      for (let node of nodes) {
+        node.x += node.vx;
+        node.y += node.vy;
+
+        if (node.x < 0 || node.x > canvas.width) node.vx *= -1;
+        if (node.y < 0 || node.y > canvas.height) node.vy *= -1;
+      }
+
+      requestAnimationFrame(draw);
+    }
+
+    window.addEventListener("resize", resizeCanvas);
+    resizeCanvas();
+    draw();
+  </script>
+</body>
+</html>
